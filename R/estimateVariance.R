@@ -183,7 +183,7 @@ fit_voom <- function(d, aggregation) {
     g <- rownames(fit$coefficients)
     se_log2 <- fit$stdev.unscaled[, coef] * sqrt(fit$s2.post)
     list(genes = g, se_log2 = se_log2, df = fit$df.total, group = d$group,
-         n_i = d$nCells, nb = FALSE)
+         n_i = d$nCells, nb = FALSE, acpm = fit$Amean)
 }
 
 #' Null design: covariates only, no condition term

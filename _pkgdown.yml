@@ -16,12 +16,22 @@ reference:
   - assessPseudobulk
   - estimateVariance
   - estimateSensitivity
-- title: Calling and reporting
-  desc: Assemble the comparison table, make the call, and show the matrix.
+- title: Calling
+  desc: Assemble the comparison table and make the call.
   contents:
   - callComparisons
   - defaultThresholds
+- title: Plots
+  desc: Read the calls at a glance and explain them.
+  contents:
   - plotAdequacy
+  - plotConfounding
+  - plotCells
+  - plotVariance
+  - plotRegime
+  - plotSensitivity
+  - plotPower
+  - plotComparison
 
 articles:
 - title: Get started

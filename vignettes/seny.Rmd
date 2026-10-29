@@ -91,6 +91,35 @@ plots <- plotAdequacy(res)
 plots[["cell_type"]]
 ```
 
+## Reading the diagnostics
+
+A family of plotting functions explains the calls. `plotVariance()` shows where
+each comparison's noise comes from --- the depth, cell and donor shares of the
+per-sample variance. A donor-dominated bar means only more donors will help.
+
+```{r variance, fig.width = 6, fig.height = 3, fig.alt = "Variance attribution bars"}
+plotVariance(res)
+```
+
+`plotRegime()` places the same decomposition on one triangle, coloured by the
+call and sized by the median detectable effect: position shows where the noise
+is, size shows how hard detection is.
+
+```{r regime, fig.width = 5.5, fig.height = 5, fig.alt = "Variance regime ternary"}
+plotRegime(res)
+```
+
+`plotComparison()` assembles a single comparison --- the call and its reason, the
+variance donut, the sensitivity curve and the cells per sample --- into one card.
+
+```{r card, fig.width = 10, fig.height = 4, fig.alt = "Comparison card for one comparison"}
+plotComparison(res, "cell_type:NK:B_vs_A")
+```
+
+Other views: `plotConfounding()` (Layer-1 association), `plotCells()` (cells per
+sample by condition), `plotSensitivity()` (detectable effect vs expression) and
+`plotPower()` (power vs effect size).
+
 ## Thresholds and honest reporting
 
 The numeric cut-offs that drive the call live in `defaultThresholds()` and can be

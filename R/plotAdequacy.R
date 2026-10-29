@@ -1,7 +1,3 @@
-# traffic-light fill scale, shared by the matrix and any later report
-seny_call_colors <- c(Adequate = '#1A9850', Underpowered = '#FEE08B',
-                      Caution = '#FDAE61', Invalid = '#D73027')
-
 #' Traffic-light matrix of adequacy calls
 #'
 #' Renders the comparison table from [callComparisons()] (or [assessAll()]) as a

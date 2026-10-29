@@ -30,6 +30,10 @@ Imports:
     BiocParallel,
     Matrix,
     ggplot2,
+    ggbeeswarm,
+    ggrepel,
+    patchwork,
+    scales,
     methods,
     stats
 Suggests:

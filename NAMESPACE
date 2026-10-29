@@ -9,6 +9,13 @@ export(estimateSensitivity)
 export(estimateVariance)
 export(pbSetup)
 export(plotAdequacy)
+export(plotCells)
+export(plotComparison)
+export(plotConfounding)
+export(plotPower)
+export(plotRegime)
+export(plotSensitivity)
+export(plotVariance)
 importFrom(S4Vectors,
   "metadata<-",
   DataFrame,

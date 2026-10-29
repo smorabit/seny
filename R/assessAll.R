@@ -40,5 +40,18 @@ assessAll <- function(sce, sample, group, annotations, covariates = character(0)
                                        fdr = fdr, pi1 = pi1)
     res <- callComparisons(design, pseudobulk, variance$summary, sensitivity, thresholds)
     attr(res, 'pb') <- x
+    attr(res, 'pergene') <- collect_pergene(variance$pergene)
     res
+}
+
+#' Flatten the per-comparison fits into one per-gene table for the plots
+#' @noRd
+collect_pergene <- function(pergene) {
+    rows <- lapply(names(pergene), function(k) {
+        f <- pergene[[k]]
+        data.frame(comparison = k, gene = f$genes, acpm = f$acpm,
+                   se_log2 = f$se_log2, df = f$df, stringsAsFactors = FALSE)
+    })
+    if (length(rows) == 0) return(NULL)
+    do.call(rbind, rows)
 }
