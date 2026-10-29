@@ -1,0 +1,105 @@
+# seny
+
+**Sanity checks for differential gene Expression in NoisY data** (and
+*seny*, the Catalan word for common sense).
+
+For every cluster-by-contrast comparison in a multi-sample single-cell
+dataset, `seny` decides whether a pseudobulk differential-expression
+test is **Adequate**, **Underpowered**, **Caution** or **Invalid**, and
+explains why. The diagnostics are analytic and run on your own data —
+there is no per-dataset simulation.
+
+| Call | Meaning |
+|----|----|
+| **Invalid** | Type I error cannot be trusted (design not estimable, too few samples per group). |
+| **Caution** | Valid, but a risk applies (condition confounded with a covariate, or cell-count imbalance tracking the condition). |
+| **Underpowered** | Valid but unable to detect the target effect (sensitivity too low, or too few testable genes). |
+| **Adequate** | No flags. |
+
+The call has a severity order — Invalid \> Caution \> Underpowered \>
+Adequate — and a `reason` string that lists every flag, so a single
+headline never hides a second problem.
+
+## Installation
+
+`seny` is not yet on Bioconductor. Install the development version from
+GitHub:
+
+``` r
+
+# install.packages("remotes")
+remotes::install_github("smorabit/seny")
+```
+
+## Usage
+
+``` r
+
+library(seny)
+
+sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+
+res <- assessAll(sce, sample = "donor", group = "condition",
+                 annotations = "cell_type", targetLFC = 1)
+res                         # one row per comparison: metrics, call, reason
+
+plots <- plotAdequacy(res)  # traffic-light matrix, one ggplot per annotation set
+plots[["cell_type"]]
+```
+
+See
+[`vignette("seny")`](https://smorabit.github.io/seny/articles/seny.md)
+for the full walk-through.
+
+## Status
+
+Experimental (P1 MVP). The package covers diagnostic layers 1, 2 and 4;
+the call thresholds in
+[`defaultThresholds()`](https://smorabit.github.io/seny/reference/defaultThresholds.md)
+are **provisional placeholders** being recalibrated from a validation
+study (OneK1K, AIDA and an in-house atlas). Outlier detection, empirical
+checks, composition assessment, calibrated power and an HTML report are
+planned.
+
+# Package index
+
+## Entry point
+
+Run the whole assessment, or build the pseudobulk object the layers
+share.
+
+- [`assessAll()`](https://smorabit.github.io/seny/reference/assessAll.md)
+  : Assess every pseudobulk comparison end to end
+- [`pbSetup()`](https://smorabit.github.io/seny/reference/pbSetup.md) :
+  Set up pseudobulk comparisons from a single-cell dataset
+
+## Diagnostic layers
+
+The per-comparison diagnostics, in order.
+
+- [`assessDesign()`](https://smorabit.github.io/seny/reference/assessDesign.md)
+  : Layer 1: design validity and confounding
+- [`assessPseudobulk()`](https://smorabit.github.io/seny/reference/assessPseudobulk.md)
+  : Layer 2: pseudobulk quality
+- [`estimateVariance()`](https://smorabit.github.io/seny/reference/estimateVariance.md)
+  : Layer 4 (variance): null-model dispersion and its decomposition
+- [`estimateSensitivity()`](https://smorabit.github.io/seny/reference/estimateSensitivity.md)
+  : Layer 4 (sensitivity): minimum detectable effect and power
+
+## Calling and reporting
+
+Assemble the comparison table, make the call, and show the matrix.
+
+- [`callComparisons()`](https://smorabit.github.io/seny/reference/callComparisons.md)
+  : Assemble the comparison table and make the adequacy call
+- [`defaultThresholds()`](https://smorabit.github.io/seny/reference/defaultThresholds.md)
+  : Default decision thresholds for the adequacy call
+- [`plotAdequacy()`](https://smorabit.github.io/seny/reference/plotAdequacy.md)
+  : Traffic-light matrix of adequacy calls
+
+# Articles
+
+### Get started
+
+- [Assessing pseudobulk DE adequacy with
+  seny](https://smorabit.github.io/seny/articles/seny.md):
