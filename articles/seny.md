@@ -107,6 +107,54 @@ plots[["cell_type"]]
 ![Traffic-light matrix of adequacy calls by cell
 type](seny_files/figure-html/matrix-1.png)
 
+## Reading the diagnostics
+
+A family of plotting functions explains the calls.
+[`plotVariance()`](https://smorabit.github.io/seny/reference/plotVariance.md)
+shows where each comparison’s noise comes from — the depth, cell and
+donor shares of the per-sample variance. A donor-dominated bar means
+only more donors will help.
+
+``` r
+
+plotVariance(res)
+```
+
+![Variance attribution bars](seny_files/figure-html/variance-1.png)
+
+[`plotRegime()`](https://smorabit.github.io/seny/reference/plotRegime.md)
+places the same decomposition on one triangle, coloured by the call and
+sized by the median detectable effect: position shows where the noise
+is, size shows how hard detection is.
+
+``` r
+
+plotRegime(res)
+```
+
+![Variance regime ternary](seny_files/figure-html/regime-1.png)
+
+[`plotComparison()`](https://smorabit.github.io/seny/reference/plotComparison.md)
+assembles a single comparison — the call and its reason, the variance
+donut, the sensitivity curve and the cells per sample — into one card.
+
+``` r
+
+plotComparison(res, "cell_type:NK:B_vs_A")
+```
+
+![Comparison card for one comparison](seny_files/figure-html/card-1.png)
+
+Other views:
+[`plotConfounding()`](https://smorabit.github.io/seny/reference/plotConfounding.md)
+(Layer-1 association),
+[`plotCells()`](https://smorabit.github.io/seny/reference/plotCells.md)
+(cells per sample by condition),
+[`plotSensitivity()`](https://smorabit.github.io/seny/reference/plotSensitivity.md)
+(detectable effect vs expression) and
+[`plotPower()`](https://smorabit.github.io/seny/reference/plotPower.md)
+(power vs effect size).
+
 ## Thresholds and honest reporting
 
 The numeric cut-offs that drive the call live in
@@ -160,38 +208,41 @@ sessionInfo()
 #> [1] seny_0.0.1
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] sass_0.4.10                 generics_0.1.4             
-#>  [3] SparseArray_1.12.3          lattice_0.23-1             
-#>  [5] digest_0.6.39               sparseMatrixStats_1.24.0   
-#>  [7] evaluate_1.0.5              grid_4.6.2                 
-#>  [9] RColorBrewer_1.1-3          fastmap_1.2.0              
-#> [11] glmGamPoi_1.24.0            jsonlite_2.0.0             
-#> [13] Matrix_1.7-6                limma_3.68.5               
-#> [15] SingleCellExperiment_1.34.0 scales_1.4.0               
-#> [17] codetools_0.2-20            textshaping_1.0.5          
-#> [19] jquerylib_0.1.4             abind_1.4-8                
-#> [21] cli_3.6.6                   rlang_1.3.0                
-#> [23] XVector_0.52.0              Biobase_2.72.0             
-#> [25] splines_4.6.2               withr_3.0.3                
-#> [27] cachem_1.1.0                DelayedArray_0.38.2        
-#> [29] yaml_2.3.12                 otel_0.2.0                 
-#> [31] S4Arrays_1.12.1             beachmat_2.28.0            
-#> [33] parallel_4.6.2              tools_4.6.2                
-#> [35] BiocParallel_1.46.0         ggplot2_4.0.3              
-#> [37] locfit_1.5-9.12             SummarizedExperiment_1.42.0
-#> [39] BiocGenerics_0.58.1         vctrs_0.7.3                
-#> [41] R6_2.6.1                    matrixStats_1.5.0          
-#> [43] stats4_4.6.2                lifecycle_1.0.5            
-#> [45] Seqinfo_1.2.0               S4Vectors_0.50.3           
-#> [47] edgeR_4.10.7                fs_2.1.0                   
-#> [49] IRanges_2.46.0              ragg_1.5.2                 
-#> [51] desc_1.4.3                  pkgdown_2.2.1              
-#> [53] bslib_0.12.0                gtable_0.3.6               
-#> [55] Rcpp_1.1.2                  glue_1.8.1                 
-#> [57] statmod_1.5.2               systemfonts_1.3.2          
-#> [59] xfun_0.62                   GenomicRanges_1.64.0       
-#> [61] MatrixGenerics_1.24.0       knitr_1.52                 
-#> [63] farver_2.1.2                htmltools_0.5.9            
-#> [65] DelayedMatrixStats_1.34.0   rmarkdown_2.32             
-#> [67] compiler_4.6.2              S7_0.2.2
+#>  [1] SummarizedExperiment_1.42.0 beeswarm_0.4.0             
+#>  [3] gtable_0.3.6                xfun_0.62                  
+#>  [5] bslib_0.12.0                ggplot2_4.0.3              
+#>  [7] ggrepel_0.9.8               Biobase_2.72.0             
+#>  [9] lattice_0.23-1              vctrs_0.7.3                
+#> [11] tools_4.6.2                 generics_0.1.4             
+#> [13] stats4_4.6.2                parallel_4.6.2             
+#> [15] Matrix_1.7-6                RColorBrewer_1.1-3         
+#> [17] S7_0.2.2                    desc_1.4.3                 
+#> [19] S4Vectors_0.50.3            sparseMatrixStats_1.24.0   
+#> [21] lifecycle_1.0.5             compiler_4.6.2             
+#> [23] farver_2.1.2                textshaping_1.0.5          
+#> [25] statmod_1.5.2               Seqinfo_1.2.0              
+#> [27] codetools_0.2-20            glmGamPoi_1.24.0           
+#> [29] vipor_0.4.7                 htmltools_0.5.9            
+#> [31] sass_0.4.10                 yaml_2.3.12                
+#> [33] pkgdown_2.2.1               jquerylib_0.1.4            
+#> [35] BiocParallel_1.46.0         SingleCellExperiment_1.34.0
+#> [37] DelayedArray_0.38.2         cachem_1.1.0               
+#> [39] limma_3.68.5                abind_1.4-8                
+#> [41] locfit_1.5-9.12             digest_0.6.39              
+#> [43] labeling_0.4.3              splines_4.6.2              
+#> [45] fastmap_1.2.0               grid_4.6.2                 
+#> [47] cli_3.6.6                   SparseArray_1.12.3         
+#> [49] patchwork_1.3.2             S4Arrays_1.12.1            
+#> [51] edgeR_4.10.7                withr_3.0.3                
+#> [53] DelayedMatrixStats_1.34.0   scales_1.4.0               
+#> [55] ggbeeswarm_0.7.3            rmarkdown_2.32             
+#> [57] XVector_0.52.0              matrixStats_1.5.0          
+#> [59] otel_0.2.0                  ragg_1.5.2                 
+#> [61] beachmat_2.28.0             evaluate_1.0.5             
+#> [63] knitr_1.52                  GenomicRanges_1.64.0       
+#> [65] IRanges_2.46.0              rlang_1.3.0                
+#> [67] Rcpp_1.1.2                  glue_1.8.1                 
+#> [69] BiocGenerics_0.58.1         jsonlite_2.0.0             
+#> [71] R6_2.6.1                    MatrixGenerics_1.24.0      
+#> [73] systemfonts_1.3.2           fs_2.1.0
 ```

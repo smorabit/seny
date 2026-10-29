@@ -87,16 +87,35 @@ The per-comparison diagnostics, in order.
 - [`estimateSensitivity()`](https://smorabit.github.io/seny/reference/estimateSensitivity.md)
   : Layer 4 (sensitivity): minimum detectable effect and power
 
-## Calling and reporting
+## Calling
 
-Assemble the comparison table, make the call, and show the matrix.
+Assemble the comparison table and make the call.
 
 - [`callComparisons()`](https://smorabit.github.io/seny/reference/callComparisons.md)
   : Assemble the comparison table and make the adequacy call
 - [`defaultThresholds()`](https://smorabit.github.io/seny/reference/defaultThresholds.md)
   : Default decision thresholds for the adequacy call
+
+## Plots
+
+Read the calls at a glance and explain them.
+
 - [`plotAdequacy()`](https://smorabit.github.io/seny/reference/plotAdequacy.md)
   : Traffic-light matrix of adequacy calls
+- [`plotConfounding()`](https://smorabit.github.io/seny/reference/plotConfounding.md)
+  : Confounding strip: condition-covariate association per comparison
+- [`plotCells()`](https://smorabit.github.io/seny/reference/plotCells.md)
+  : Cells per sample by condition
+- [`plotVariance()`](https://smorabit.github.io/seny/reference/plotVariance.md)
+  : Variance attribution bars
+- [`plotRegime()`](https://smorabit.github.io/seny/reference/plotRegime.md)
+  : Variance regime ternary
+- [`plotSensitivity()`](https://smorabit.github.io/seny/reference/plotSensitivity.md)
+  : Detectable effect vs expression
+- [`plotPower()`](https://smorabit.github.io/seny/reference/plotPower.md)
+  : Power vs effect size
+- [`plotComparison()`](https://smorabit.github.io/seny/reference/plotComparison.md)
+  : Comparison card: a per-comparison deep dive
 
 # Articles
 
