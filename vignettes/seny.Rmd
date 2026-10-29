@@ -1,0 +1,112 @@
+---
+title: "Assessing pseudobulk DE adequacy with seny"
+output:
+  rmarkdown::html_document:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Assessing pseudobulk DE adequacy with seny}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 5, fig.height = 4)
+```
+
+## What seny does
+
+For every cluster-by-contrast comparison in a multi-sample single-cell dataset,
+`seny` decides whether a pseudobulk differential-expression test is **Adequate**,
+**Underpowered**, **Caution** or **Invalid**, and explains why. The diagnostics
+are analytic and run on your own data; there is no per-dataset simulation.
+
+The call has a severity order --- Invalid > Caution > Underpowered > Adequate ---
+and a `reason` string that lists *every* flag, so a single headline never hides a
+second problem:
+
+| Call | Meaning |
+| --- | --- |
+| **Invalid** | Type I error cannot be trusted (design not estimable, too few samples per group). |
+| **Caution** | Valid, but a specific risk applies (condition confounded with a covariate, or cell-count imbalance tracking the condition). |
+| **Underpowered** | Valid but unable to detect the target effect (sensitivity too low, or too few testable genes). |
+| **Adequate** | No flags. |
+
+## The example dataset
+
+`seny` ships a small simulated dataset: 24 donors (12 per condition), three cell
+types, each planted in a different regime so the call varies.
+
+```{r load}
+library(seny)
+sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+table(sce$cell_type, sce$condition)
+```
+
+## Running the assessment
+
+`assessAll()` chains the layers --- pseudobulk setup, design/confounding
+(layer 1), pseudobulk quality (layer 2), variance structure and sensitivity
+(layer 4) --- and returns one row per comparison.
+
+```{r assess}
+res <- assessAll(sce, sample = "donor", group = "condition",
+                 annotations = "cell_type", targetLFC = 1)
+```
+
+The comparison table carries the layer-2 cell-quality metrics alongside the
+call. `cells_cond_cor` is the correlation of log cells-per-sample with the
+condition; `cells_ratio` is the smaller group median over the larger;
+`sensitivity_fraction` is the share of testable genes detectable at the target
+effect.
+
+```{r table}
+cols <- c("cluster", "nA", "nB", "median_cells", "gini_cells", "cells_ratio",
+          "cells_cond_cor", "n_testable", "sensitivity_fraction", "call")
+knitr::kable(as.data.frame(res)[, cols], digits = 2, row.names = FALSE)
+```
+
+Each non-adequate call explains itself:
+
+```{r reasons}
+d <- as.data.frame(res)
+for (i in seq_len(nrow(d))) {
+    cat(d$cluster[i], "->", as.character(d$call[i]), "::", d$reason[i], "\n")
+}
+```
+
+Here CD4 T is clean (**Adequate**); CD8 T has far fewer cells in condition B, so
+its cell-count imbalance tracks the condition and breaks the equal-variance
+assumption (**Caution** --- consider voom `sampleWeights` or dreamlet precision
+weights); NK has high between-donor variance at a modest cell count, so few
+genes are detectable at the target effect (**Underpowered**).
+
+## The traffic-light matrix
+
+`plotAdequacy()` renders the table as a clusters-by-contrasts grid, one plot per
+annotation set, coloured by the call --- the at-a-glance view.
+
+```{r matrix, fig.alt = "Traffic-light matrix of adequacy calls by cell type"}
+plots <- plotAdequacy(res)
+plots[["cell_type"]]
+```
+
+## Thresholds and honest reporting
+
+The numeric cut-offs that drive the call live in `defaultThresholds()` and can be
+overridden. They are **provisional placeholders** --- the final values are being
+derived from a validation study (OneK1K, AIDA and an in-house atlas), not chosen
+up front.
+
+```{r thresholds}
+str(defaultThresholds())
+```
+
+This run assessed `r nrow(d)` comparisons. When you scan many comparisons at
+once, treat the matrix as a screen, not a ranking: picking the standout cell
+after the fact inflates false positives. The call tells you which comparisons are
+*worth* testing --- it does not replace multiple-testing control across them.
+
+```{r session}
+sessionInfo()
+```

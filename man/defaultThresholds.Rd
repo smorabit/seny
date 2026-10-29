@@ -10,7 +10,11 @@ defaultThresholds()
 A named list: \code{cramerV} (condition-covariate association above which a
 comparison is flagged Caution), \code{vif} (variance inflation factor threshold),
 \code{sensitivity} (sensitivity fraction at or above which a comparison is
-adequately powered), and \code{minSamples} (fewer samples per group is Invalid).
+adequately powered), \code{minSamples} (fewer samples per group is Invalid),
+\code{cellsCondCor} (absolute correlation of log cells per sample with condition
+above which cell-count imbalance is flagged Caution), and \code{minTestable}
+(fewer testable genes is Underpowered). The last two gate the layer-2
+metrics and, like the others, are provisional placeholders until E1-E8.
 }
 \description{
 Provisional values used by \code{\link[=callComparisons]{callComparisons()}}. The final numbers are to be

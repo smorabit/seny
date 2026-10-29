@@ -1,0 +1,10 @@
+# R package build artifacts
+*.Rcheck/
+*.tar.gz
+.Rproj.user/
+.Rhistory
+.RData
+.Rapp.history
+
+# pkgdown site is built in CI; don't track the rendered output
+docs/

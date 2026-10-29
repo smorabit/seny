@@ -30,3 +30,26 @@ test_that('a partially confounded batch is Caution', {
                      annotations = 'cell_type', covariates = 'batch', targetLFC = 1)
     expect_true(all(as.character(res$call) == 'Caution'))
 })
+
+test_that('cell-count imbalance correlated with condition is Caution', {
+    sce <- sim_sce(n_per_group = 15, phi_donor = 0.01, theta = 0.2, n_genes = 200,
+                   cells_per = 80, cells_imbalance = 0.2, seed = 7)
+    res <- assessAll(sce, sample = 'donor', group = 'condition',
+                     annotations = 'cell_type', targetLFC = 1)
+    expect_true(all(as.character(res$call) == 'Caution'))
+    expect_true(all(grepl('imbalance', res$reason)))
+})
+
+test_that('too few testable genes is Underpowered', {
+    cmp <- 'a:c:B_vs_A'
+    design <- data.frame(comparison = cmp, estimable = TRUE, nA = 10, nB = 10,
+                         max_cramerV = 0, max_vif = 1, stringsAsFactors = FALSE)
+    pseudobulk <- data.frame(comparison = cmp, cells_cond_cor = 0, n_testable = 50,
+                             stringsAsFactors = FALSE)
+    variance <- data.frame(comparison = cmp, stringsAsFactors = FALSE)
+    sensitivity <- data.frame(comparison = cmp, sensitivity_fraction = 0.9,
+                              target_lfc = 1, stringsAsFactors = FALSE)
+    out <- callComparisons(design, pseudobulk, variance, sensitivity)
+    expect_equal(as.character(out$call), 'Underpowered')
+    expect_true(grepl('testable', out$reason))
+})

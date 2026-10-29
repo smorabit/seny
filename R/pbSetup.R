@@ -102,6 +102,10 @@ build_annotation_set <- function(counts, cd, sample, group, ann, covariates,
                        row.names = colnames(pb), stringsAsFactors = FALSE)
     for (cov in covariates) meta[[cov]] <- first_of(cov)
 
+    # pre-filter per-sample cell counts, so layer 2 can report the fraction of
+    # samples dropped for falling below minCells (the drop happens next)
+    cell_counts <- meta[, c('cluster', 'group', 'nCells')]
+
     keep_pb <- meta$nCells >= minCells
     pb <- pb[, keep_pb, drop = FALSE]
     meta <- meta[keep_pb, , drop = FALSE]
@@ -119,6 +123,7 @@ build_annotation_set <- function(counts, cd, sample, group, ann, covariates,
         colData = S4Vectors::DataFrame(meta))
     S4Vectors::metadata(se) <- list(sample = sample, group = group,
         covariates = covariates, contrasts = contrasts, minCells = minCells,
-        aggregation = aggregation, theta = thetas, annotation = ann)
+        aggregation = aggregation, theta = thetas, annotation = ann,
+        cell_counts = cell_counts)
     se
 }

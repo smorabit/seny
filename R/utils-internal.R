@@ -31,6 +31,16 @@ normed_sf <- function(mat) {
     tot / exp(mean(log(tot[tot > 0])))
 }
 
+#' Gini coefficient of a non-negative vector (0 = equal, 1 = maximally unequal)
+#' @noRd
+gini <- function(x) {
+    x <- x[!is.na(x)]
+    n <- length(x)
+    if (n < 2 || sum(x) == 0) return(0)
+    x <- sort(x)
+    2 * sum(seq_len(n) * x) / (n * sum(x)) - (n + 1) / n
+}
+
 #' Standardised mean difference between two numeric vectors
 #' @noRd
 smd <- function(x, y) {

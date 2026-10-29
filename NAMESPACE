@@ -8,6 +8,7 @@ export(defaultThresholds)
 export(estimateSensitivity)
 export(estimateVariance)
 export(pbSetup)
+export(plotAdequacy)
 importFrom(S4Vectors,
   "metadata<-",
   DataFrame,
@@ -28,3 +29,4 @@ importFrom(edgeR,
   filterByExpr,
   glmQLFit
 )
+importFrom(ggplot2,.data)

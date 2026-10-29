@@ -3,8 +3,8 @@
 # (theta), a handful of DE genes, and an optional confounding batch.
 
 sim_sce <- function(n_per_group = 12, phi_donor = 0.03, theta = 0.3, n_genes = 300,
-                    n_de = 15, log2fc = 1.5, cells_per = 60, batch = c('none', 'partial', 'nested'),
-                    seed = 1) {
+                    n_de = 15, log2fc = 1.5, cells_per = 60, cells_imbalance = 1,
+                    batch = c('none', 'partial', 'nested'), seed = 1) {
     batch <- match.arg(batch)
     set.seed(seed)
     suppressMessages({
@@ -33,15 +33,16 @@ sim_sce <- function(n_per_group = 12, phi_donor = 0.03, theta = 0.3, n_genes = 3
     mats <- list(); meta <- list()
     for (ct in cts) {
         for (dn in donors) {
+            n_cell <- if (cond[dn] == 'B') round(cells_per * cells_imbalance) else cells_per
             deff <- stats::rnorm(n_genes, 0, sqrt(phi_donor))          # donor random effect
             lm <- base + deff
             if (cond[dn] == 'B') lm[de_genes] <- lm[de_genes] + de_sign * log2fc * log(2)
             mu <- exp(lm)
-            m <- matrix(stats::rnbinom(n_genes * cells_per, mu = mu, size = 1 / theta),
+            m <- matrix(stats::rnbinom(n_genes * n_cell, mu = mu, size = 1 / theta),
                         nrow = n_genes)
             mats[[length(mats) + 1]] <- m
             meta[[length(meta) + 1]] <- data.frame(
-                donor = rep(dn, cells_per), condition = unname(cond[dn]),
+                donor = rep(dn, n_cell), condition = unname(cond[dn]),
                 batch = unname(bat[dn]), cell_type = ct, stringsAsFactors = FALSE)
         }
     }

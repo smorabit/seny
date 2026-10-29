@@ -2,7 +2,7 @@
 % Please edit documentation in R/assessPseudobulk.R
 \name{assessPseudobulk}
 \alias{assessPseudobulk}
-\title{Layer 2: pseudobulk quality (minimal)}
+\title{Layer 2: pseudobulk quality}
 \usage{
 assessPseudobulk(x)
 }
@@ -11,12 +11,22 @@ assessPseudobulk(x)
 }
 \value{
 A \code{data.frame}, one row per comparison, with \code{min_cells},
-\code{median_cells} and \code{n_testable}.
+\code{median_cells}, \code{gini_cells}, \code{frac_below_min}, \code{cells_ratio},
+\code{cells_cond_cor}, \code{libsize_cond_cor}, \code{n_testable} and \code{frac_testable}.
 }
 \description{
-For every comparison, reports cells per sample (minimum and median) and the
-number of testable genes (passing \link[edgeR:filterByExpr]{edgeR::filterByExpr} under the comparison's
-design). The testable-gene count is the denominator for the sensitivity
-fraction in \code{\link[=estimateSensitivity]{estimateSensitivity()}}. The full layer 2 (Gini, group imbalance,
-library-size and outlier metrics) is added later.
+For every comparison, summarises the pseudobulks the test will run on: the
+cells contributed per sample and their inequality, whether cell counts or
+library sizes track the condition (which breaks the equal-variance
+assumption), and how many genes are testable. Specifically, per comparison:
+cells per sample (\code{min_cells}, \code{median_cells}, \code{gini_cells}, and
+\code{frac_below_min}, the fraction of the cluster's samples dropped for having
+fewer than \code{minCells} cells); group imbalance (\code{cells_ratio}, the smaller
+group median over the larger, and \code{cells_cond_cor}, the correlation of
+log cells with condition); \code{libsize_cond_cor} (correlation of log library
+size with condition); and testable genes (\code{n_testable} passing
+\link[edgeR:filterByExpr]{edgeR::filterByExpr} under the comparison's design, and \code{frac_testable}).
+The testable-gene count is the denominator for the sensitivity fraction in
+\code{\link[=estimateSensitivity]{estimateSensitivity()}}. Outlier-sample detection is part of layer 3, not
+here.
 }
