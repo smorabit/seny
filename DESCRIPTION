@@ -1,0 +1,36 @@
+Package: seny
+Title: Sanity Checks for Differential Expression in Noisy Data
+Version: 0.0.1
+Authors@R:
+    person("Samuel", "Morabito", email = "sam.morabito@cnag.eu", role = c("aut", "cre"))
+Description: For every cluster-by-contrast comparison in a multi-sample
+    single-cell dataset, seny assesses whether a pseudobulk differential
+    expression test is Adequate, Underpowered, Caution or Invalid, and explains
+    why. The diagnostics are analytic: design validity and confounding
+    (layer 1), pseudobulk quality (layer 2), variance structure and sensitivity
+    (layer 4), with a minimum detectable effect per gene from a
+    negative-binomial variance model. No per-dataset simulation. The name is a
+    backronym -- Sanity checks for differential gene Expression in NoisY data --
+    and also the Catalan word for common sense.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+biocViews: DifferentialExpression, SingleCell, QualityControl, Software
+Depends:
+    R (>= 4.3)
+Imports:
+    SummarizedExperiment,
+    S4Vectors,
+    edgeR,
+    glmGamPoi,
+    BiocParallel,
+    Matrix,
+    methods,
+    stats
+Suggests:
+    SingleCellExperiment,
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
+Config/testthat/edition: 3
+Config/roxygen2/version: 8.1.0
