@@ -25,6 +25,16 @@ which chains
 and
 [`callComparisons()`](https://smorabit.github.io/seny/reference/callComparisons.md).
 
+## See also
+
+Useful links:
+
+- <https://smorabit.github.io/seny/>
+
+- <https://github.com/smorabit/seny>
+
+- Report bugs at <https://github.com/smorabit/seny/issues>
+
 ## Author
 
 **Maintainer**: Samuel Morabito <sam.morabito@cnag.eu>

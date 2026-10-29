@@ -27,6 +27,7 @@ assessAll(
   minCells = 10,
   aggregation = c("sum", "mean"),
   assayName = "counts",
+  method = c("edgeR", "deseq2", "voom"),
   targetLFC = 1,
   power = 0.8,
   fdr = 0.05,
@@ -84,6 +85,13 @@ assessAll(
 - assayName:
 
   Name of the raw-count assay in `sce`. Default `"counts"`.
+
+- method:
+
+  DE method whose variance model the call should match, passed to
+  [`estimateVariance()`](https://smorabit.github.io/seny/reference/estimateVariance.md):
+  `"edgeR"`, `"deseq2"` or `"voom"`. `"edgeR"`/`"deseq2"` require
+  `aggregation = "sum"`; `aggregation = "mean"` requires `"voom"`.
 
 - targetLFC:
 

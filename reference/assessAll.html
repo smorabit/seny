@@ -62,6 +62,7 @@ Invalid call per cluster-by-contrast comparison.</p>
 <span>  minCells <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  aggregation <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sum"</span>, <span class="st">"mean"</span><span class="op">)</span>,</span>
 <span>  assayName <span class="op">=</span> <span class="st">"counts"</span>,</span>
+<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"edgeR"</span>, <span class="st">"deseq2"</span>, <span class="st">"voom"</span><span class="op">)</span>,</span>
 <span>  targetLFC <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  power <span class="op">=</span> <span class="fl">0.8</span>,</span>
 <span>  fdr <span class="op">=</span> <span class="fl">0.05</span>,</span>
@@ -117,6 +118,12 @@ dropped. Default 10.</p></dd>
 
 <dt id="arg-assayname">assayName<a class="anchor" aria-label="anchor" href="#arg-assayname"></a></dt>
 <dd><p>Name of the raw-count assay in <code>sce</code>. Default <code>"counts"</code>.</p></dd>
+
+
+<dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
+<dd><p>DE method whose variance model the call should match, passed to
+<code><a href="estimateVariance.html">estimateVariance()</a></code>: <code>"edgeR"</code>, <code>"deseq2"</code> or <code>"voom"</code>. <code>"edgeR"</code>/<code>"deseq2"</code>
+require <code>aggregation = "sum"</code>; <code>aggregation = "mean"</code> requires <code>"voom"</code>.</p></dd>
 
 
 <dt id="arg-targetlfc">targetLFC<a class="anchor" aria-label="anchor" href="#arg-targetlfc"></a></dt>

@@ -82,7 +82,8 @@ The per-comparison diagnostics, in order.
 - [`assessPseudobulk()`](https://smorabit.github.io/seny/reference/assessPseudobulk.md)
   : Layer 2: pseudobulk quality
 - [`estimateVariance()`](https://smorabit.github.io/seny/reference/estimateVariance.md)
-  : Layer 4 (variance): null-model dispersion and its decomposition
+  : Layer 4 (variance): null-model dispersion, decomposition and
+  per-gene SE
 - [`estimateSensitivity()`](https://smorabit.github.io/seny/reference/estimateSensitivity.md)
   : Layer 4 (sensitivity): minimum detectable effect and power
 

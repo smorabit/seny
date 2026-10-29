@@ -1,21 +1,23 @@
-# Layer 4 (variance): null-model dispersion and its decomposition
+# Layer 4 (variance): null-model dispersion, decomposition and per-gene SE
 
-For every comparison, fits the null model (design without the condition
-term) with edgeR to get the pseudobulk negative-binomial dispersion
-`phi_total`, then splits it into a cell-heterogeneity term (`theta`/n,
-with the cell-level `theta` estimated at
+For every comparison, fits the null model with the chosen DE method and
+returns the per-gene standard error of the two-group log2 fold-change
+contrast (used by
+[`estimateSensitivity()`](https://smorabit.github.io/seny/reference/estimateSensitivity.md)).
+For the count methods (`edgeR`, `deseq2`) it also splits the pseudobulk
+negative-binomial dispersion `phi_total` into a cell-heterogeneity term
+(`theta`/n, with the cell-level `theta` from
 [`pbSetup()`](https://smorabit.github.io/seny/reference/pbSetup.md)) and
-a between-donor term `phi_donor` via the moment estimate
-`phi_donor = max(0, phi_total - theta * mean(1/n))`. Reports the
-per-gene fits needed by
-[`estimateSensitivity()`](https://smorabit.github.io/seny/reference/estimateSensitivity.md)
-and a per-comparison summary of the variance shares (depth, cell, donor)
-with a regime label.
+a between-donor term `phi_donor` (moment estimate
+`max(0, phi_total - theta*mean(1/n))`), and reports the depth/cell/donor
+variance shares with a regime label. The `voom` method uses limma's
+precision-weight variance model, so it has no NB decomposition (those
+columns are `NA`).
 
 ## Usage
 
 ``` r
-estimateVariance(x)
+estimateVariance(x, method = c("edgeR", "deseq2", "voom", "dreamlet"))
 ```
 
 ## Arguments
@@ -27,7 +29,21 @@ estimateVariance(x)
   from
   [`pbSetup()`](https://smorabit.github.io/seny/reference/pbSetup.md).
 
+- method:
+
+  One of `"edgeR"`, `"deseq2"`, `"voom"` (or the reserved `"dreamlet"`).
+  Default `"edgeR"`.
+
 ## Value
 
-A list with `summary` (a `data.frame`, one row per comparison) and
-`pergene` (a named list of per-comparison fit objects for sensitivity).
+A list with `summary` (a `data.frame`, one row per comparison, with the
+`method`, the NB decomposition and regime) and `pergene` (a named list
+of per-comparison fits carrying `se_log2` and `df` for sensitivity).
+
+## Details
+
+The method should match the differential-expression method the user
+intends to run. `edgeR` and `deseq2` require sum aggregation (integer
+counts); `voom` works on either sum (voom) or mean (limma-trend)
+pseudobulks. `dreamlet` is reserved for mixed designs and is not yet
+implemented.

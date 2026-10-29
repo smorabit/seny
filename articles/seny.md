@@ -136,7 +136,7 @@ control across them.
 ``` r
 
 sessionInfo()
-#> R version 4.6.1 (2026-06-24)
+#> R version 4.6.2 (2026-10-29)
 #> Platform: x86_64-pc-linux-gnu
 #> Running under: Ubuntu 26.04.1 LTS
 #> 
@@ -161,27 +161,27 @@ sessionInfo()
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] sass_0.4.10                 generics_0.1.4             
-#>  [3] SparseArray_1.12.3          lattice_0.22-9             
+#>  [3] SparseArray_1.12.3          lattice_0.23-1             
 #>  [5] digest_0.6.39               sparseMatrixStats_1.24.0   
-#>  [7] evaluate_1.0.5              grid_4.6.1                 
+#>  [7] evaluate_1.0.5              grid_4.6.2                 
 #>  [9] RColorBrewer_1.1-3          fastmap_1.2.0              
 #> [11] glmGamPoi_1.24.0            jsonlite_2.0.0             
-#> [13] Matrix_1.7-5                limma_3.68.5               
+#> [13] Matrix_1.7-6                limma_3.68.5               
 #> [15] SingleCellExperiment_1.34.0 scales_1.4.0               
 #> [17] codetools_0.2-20            textshaping_1.0.5          
 #> [19] jquerylib_0.1.4             abind_1.4-8                
 #> [21] cli_3.6.6                   rlang_1.3.0                
 #> [23] XVector_0.52.0              Biobase_2.72.0             
-#> [25] splines_4.6.1               withr_3.0.3                
+#> [25] splines_4.6.2               withr_3.0.3                
 #> [27] cachem_1.1.0                DelayedArray_0.38.2        
 #> [29] yaml_2.3.12                 otel_0.2.0                 
 #> [31] S4Arrays_1.12.1             beachmat_2.28.0            
-#> [33] parallel_4.6.1              tools_4.6.1                
+#> [33] parallel_4.6.2              tools_4.6.2                
 #> [35] BiocParallel_1.46.0         ggplot2_4.0.3              
 #> [37] locfit_1.5-9.12             SummarizedExperiment_1.42.0
 #> [39] BiocGenerics_0.58.1         vctrs_0.7.3                
 #> [41] R6_2.6.1                    matrixStats_1.5.0          
-#> [43] stats4_4.6.1                lifecycle_1.0.5            
+#> [43] stats4_4.6.2                lifecycle_1.0.5            
 #> [45] Seqinfo_1.2.0               S4Vectors_0.50.3           
 #> [47] edgeR_4.10.7                fs_2.1.0                   
 #> [49] IRanges_2.46.0              ragg_1.5.2                 
@@ -193,5 +193,5 @@ sessionInfo()
 #> [61] MatrixGenerics_1.24.0       knitr_1.52                 
 #> [63] farver_2.1.2                htmltools_0.5.9            
 #> [65] DelayedMatrixStats_1.34.0   rmarkdown_2.32             
-#> [67] compiler_4.6.1              S7_0.2.2
+#> [67] compiler_4.6.2              S7_0.2.2
 ```
