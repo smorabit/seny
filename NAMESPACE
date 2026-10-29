@@ -25,8 +25,15 @@ importFrom(edgeR,
   DGEList,
   aveLogCPM,
   calcNormFactors,
+  cpm,
   estimateDisp,
   filterByExpr,
   glmQLFit
 )
 importFrom(ggplot2,.data)
+importFrom(limma,
+  eBayes,
+  lmFit,
+  voom
+)
+importFrom(stats,as.formula)

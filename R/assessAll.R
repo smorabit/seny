@@ -7,6 +7,9 @@
 #' Invalid call per cluster-by-contrast comparison.
 #'
 #' @inheritParams pbSetup
+#' @param method DE method whose variance model the call should match, passed to
+#'   [estimateVariance()]: `"edgeR"`, `"deseq2"` or `"voom"`. `"edgeR"`/`"deseq2"`
+#'   require `aggregation = "sum"`; `aggregation = "mean"` requires `"voom"`.
 #' @param targetLFC Primary target absolute log2 fold-change driving the call.
 #' @param power,fdr,pi1 Sensitivity settings passed to [estimateSensitivity()].
 #' @param thresholds A list from [defaultThresholds()].
@@ -22,15 +25,17 @@
 #' }
 assessAll <- function(sce, sample, group, annotations, covariates = character(0),
                       contrasts = NULL, minCells = 10, aggregation = c('sum', 'mean'),
-                      assayName = 'counts', targetLFC = 1, power = 0.8, fdr = 0.05,
+                      assayName = 'counts', method = c('edgeR', 'deseq2', 'voom'),
+                      targetLFC = 1, power = 0.8, fdr = 0.05,
                       pi1 = 0.05, thresholds = defaultThresholds(),
                       BPPARAM = BiocParallel::SerialParam()) {
+    method <- match.arg(method)
     x <- pbSetup(sce, sample = sample, group = group, annotations = annotations,
                  covariates = covariates, contrasts = contrasts, minCells = minCells,
                  aggregation = aggregation, assayName = assayName, BPPARAM = BPPARAM)
     design <- assessDesign(x)
     pseudobulk <- assessPseudobulk(x)
-    variance <- estimateVariance(x)
+    variance <- estimateVariance(x, method = method)
     sensitivity <- estimateSensitivity(variance, targetLFC = targetLFC, power = power,
                                        fdr = fdr, pi1 = pi1)
     res <- callComparisons(design, pseudobulk, variance$summary, sensitivity, thresholds)

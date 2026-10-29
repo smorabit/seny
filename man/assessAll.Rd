@@ -14,6 +14,7 @@ assessAll(
   minCells = 10,
   aggregation = c("sum", "mean"),
   assayName = "counts",
+  method = c("edgeR", "deseq2", "voom"),
   targetLFC = 1,
   power = 0.8,
   fdr = 0.05,
@@ -48,6 +49,10 @@ dropped. Default 10.}
 \code{"mean"} (reserved for the limma path). Default \code{"sum"}.}
 
 \item{assayName}{Name of the raw-count assay in \code{sce}. Default \code{"counts"}.}
+
+\item{method}{DE method whose variance model the call should match, passed to
+\code{\link[=estimateVariance]{estimateVariance()}}: \code{"edgeR"}, \code{"deseq2"} or \code{"voom"}. \code{"edgeR"}/\code{"deseq2"}
+require \code{aggregation = "sum"}; \code{aggregation = "mean"} requires \code{"voom"}.}
 
 \item{targetLFC}{Primary target absolute log2 fold-change driving the call.}
 

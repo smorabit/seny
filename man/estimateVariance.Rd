@@ -2,23 +2,35 @@
 % Please edit documentation in R/estimateVariance.R
 \name{estimateVariance}
 \alias{estimateVariance}
-\title{Layer 4 (variance): null-model dispersion and its decomposition}
+\title{Layer 4 (variance): null-model dispersion, decomposition and per-gene SE}
 \usage{
-estimateVariance(x)
+estimateVariance(x, method = c("edgeR", "deseq2", "voom", "dreamlet"))
 }
 \arguments{
 \item{x}{A \link[S4Vectors:SimpleList]{S4Vectors::SimpleList} from \code{\link[=pbSetup]{pbSetup()}}.}
+
+\item{method}{One of \code{"edgeR"}, \code{"deseq2"}, \code{"voom"} (or the reserved
+\code{"dreamlet"}). Default \code{"edgeR"}.}
 }
 \value{
-A list with \code{summary} (a \code{data.frame}, one row per comparison) and
-\code{pergene} (a named list of per-comparison fit objects for sensitivity).
+A list with \code{summary} (a \code{data.frame}, one row per comparison, with the
+\code{method}, the NB decomposition and regime) and \code{pergene} (a named list of
+per-comparison fits carrying \code{se_log2} and \code{df} for sensitivity).
 }
 \description{
-For every comparison, fits the null model (design without the condition term)
-with edgeR to get the pseudobulk negative-binomial dispersion \code{phi_total},
-then splits it into a cell-heterogeneity term (\code{theta}/n, with the cell-level
-\code{theta} estimated at \code{\link[=pbSetup]{pbSetup()}}) and a between-donor term \code{phi_donor} via the
-moment estimate \code{phi_donor = max(0, phi_total - theta * mean(1/n))}. Reports
-the per-gene fits needed by \code{\link[=estimateSensitivity]{estimateSensitivity()}} and a per-comparison
-summary of the variance shares (depth, cell, donor) with a regime label.
+For every comparison, fits the null model with the chosen DE method and returns
+the per-gene standard error of the two-group log2 fold-change contrast (used by
+\code{\link[=estimateSensitivity]{estimateSensitivity()}}). For the count methods (\code{edgeR}, \code{deseq2}) it also
+splits the pseudobulk negative-binomial dispersion \code{phi_total} into a
+cell-heterogeneity term (\code{theta}/n, with the cell-level \code{theta} from \code{\link[=pbSetup]{pbSetup()}})
+and a between-donor term \code{phi_donor} (moment estimate
+\code{max(0, phi_total - theta*mean(1/n))}), and reports the depth/cell/donor variance
+shares with a regime label. The \code{voom} method uses limma's precision-weight
+variance model, so it has no NB decomposition (those columns are \code{NA}).
+}
+\details{
+The method should match the differential-expression method the user intends to
+run. \code{edgeR} and \code{deseq2} require sum aggregation (integer counts); \code{voom}
+works on either sum (voom) or mean (limma-trend) pseudobulks. \code{dreamlet} is
+reserved for mixed designs and is not yet implemented.
 }

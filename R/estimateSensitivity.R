@@ -38,16 +38,15 @@ estimateSensitivity <- function(variance, targetLFC = 1, power = 0.8, fdr = 0.05
     do.call(rbind, rows)
 }
 
-#' Per-gene MDE and power from a null-model fit (phi_total variance model)
+#' Per-gene MDE and power from the per-gene SE (method-agnostic)
+#'
+#' [estimateVariance()] computes `se_log2` and `df` per gene under the chosen DE
+#' method (NB weights for edgeR/deseq2, precision weights for voom), so this turns
+#' them into power and the minimum detectable effect the same way for every method.
 #' @noRd
 analytic_power <- function(fit, targetLFC, power, fdr, pi1) {
-    mu <- fit$mu; phi <- fit$phi_total
-    is_a <- fit$group == 'A'
-    w <- 1 / (1 / mu + phi)
-    sum_a <- rowSums(w[, is_a, drop = FALSE])
-    sum_b <- rowSums(w[, !is_a, drop = FALSE])
-    se_log2 <- sqrt(1 / sum_a + 1 / sum_b) / log(2)
-    df <- (ncol(mu) - 2) + fit$df_prior
+    se_log2 <- fit$se_log2
+    df <- fit$df
     beta <- 1 - power
     alpha_star <- fdr * (1 - beta) * pi1 / ((1 - fdr) * (1 - pi1))
     ncp <- targetLFC / se_log2

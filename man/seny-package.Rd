@@ -22,6 +22,15 @@ The main entry point is \code{\link[=assessAll]{assessAll()}}, which chains \cod
 \code{\link[=assessDesign]{assessDesign()}}, \code{\link[=assessPseudobulk]{assessPseudobulk()}}, \code{\link[=estimateVariance]{estimateVariance()}},
 \code{\link[=estimateSensitivity]{estimateSensitivity()}} and \code{\link[=callComparisons]{callComparisons()}}.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://smorabit.github.io/seny/}
+  \item \url{https://github.com/smorabit/seny}
+  \item Report bugs at \url{https://github.com/smorabit/seny/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Samuel Morabito \email{sam.morabito@cnag.eu}
 

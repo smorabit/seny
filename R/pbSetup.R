@@ -93,6 +93,8 @@ build_annotation_set <- function(counts, cd, sample, group, ann, covariates,
     pbid <- interaction(cd[[sample]], cluster, drop = TRUE, sep = '__')
     pb <- pb_sum(counts, pbid)
     ncells <- as.integer(table(pbid)[colnames(pb)])
+    # mean aggregation (non-integer) pairs with the limma path; sum stays integer
+    if (aggregation == 'mean') pb <- sweep(pb, 2, ncells, '/')
 
     # per-pseudobulk metadata: sample, cluster, group, covariates (constant within pb)
     first_of <- function(col) unname(vapply(split(cd[[col]], pbid),

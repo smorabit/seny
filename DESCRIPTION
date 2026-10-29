@@ -24,6 +24,8 @@ Imports:
     SummarizedExperiment,
     S4Vectors,
     edgeR,
+    limma,
+    DESeq2,
     glmGamPoi,
     BiocParallel,
     Matrix,

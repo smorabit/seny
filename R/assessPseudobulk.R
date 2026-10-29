@@ -47,10 +47,13 @@ assessPseudobulk <- function(x) {
             frac_below_min <- if (nrow(below)) mean(below$nCells < md$minCells) else NA_real_
 
             bd <- build_design(d$group, d$covariates)
-            n_testable <- if (bd$estimable) {
-                y <- edgeR::DGEList(d$counts)
-                sum(edgeR::filterByExpr(y, bd$design))
-            } else NA_integer_
+            n_testable <- if (!bd$estimable) {
+                NA_integer_
+            } else if (identical(md$aggregation, 'mean')) {
+                sum(edgeR::filterByExpr(d$counts, bd$design, lib.size = colSums(d$counts)))
+            } else {
+                sum(edgeR::filterByExpr(edgeR::DGEList(d$counts), bd$design))
+            }
 
             cbind(key, min_cells = min(d$nCells), median_cells = stats::median(d$nCells),
                   gini_cells = gini(d$nCells), frac_below_min = frac_below_min,
