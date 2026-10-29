@@ -13,6 +13,8 @@ Description: For every cluster-by-contrast comparison in a multi-sample
     backronym -- Sanity checks for differential gene Expression in NoisY data --
     and also the Catalan word for common sense.
 License: MIT + file LICENSE
+URL: https://smorabit.github.io/seny/, https://github.com/smorabit/seny
+BugReports: https://github.com/smorabit/seny/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 biocViews: DifferentialExpression, SingleCell, QualityControl, Software

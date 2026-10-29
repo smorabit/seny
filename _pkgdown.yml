@@ -1,0 +1,29 @@
+url: https://smorabit.github.io/seny/
+
+template:
+  bootstrap: 5
+
+reference:
+- title: Entry point
+  desc: Run the whole assessment, or build the pseudobulk object the layers share.
+  contents:
+  - assessAll
+  - pbSetup
+- title: Diagnostic layers
+  desc: The per-comparison diagnostics, in order.
+  contents:
+  - assessDesign
+  - assessPseudobulk
+  - estimateVariance
+  - estimateSensitivity
+- title: Calling and reporting
+  desc: Assemble the comparison table, make the call, and show the matrix.
+  contents:
+  - callComparisons
+  - defaultThresholds
+  - plotAdequacy
+
+articles:
+- title: Get started
+  contents:
+  - seny
