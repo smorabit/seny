@@ -12,10 +12,10 @@
 #' @importFrom ggplot2 .data
 plotPower <- function(res, targets = seq(0.25, 2, by = 0.05)) {
     pg <- require_attr(res, 'pergene')
-    meta <- as.data.frame(res)[, c('comparison', 'cluster', 'annotation')]
+    meta <- as.data.frame(res)[, c('comparison', 'cluster', 'annotation', 'alpha')]
     pg <- merge(pg, meta, by = 'comparison')
     curve <- do.call(rbind, lapply(targets, function(t) {
-        pg$pw <- power_from_se(pg$se_log2, pg$df, t)
+        pg$pw <- power_from_se(pg$se_log2, pg$df, t, pg$alpha)
         agg <- stats::aggregate(pw ~ cluster + annotation, data = pg, FUN = mean)
         agg$lfc <- t
         agg

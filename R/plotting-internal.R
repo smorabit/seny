@@ -34,11 +34,11 @@ require_attr <- function(res, which) {
     a
 }
 
-# per-gene minimum detectable effect from the stored SE and df (shared by the
-# sensitivity plot and the card). The MDE does not depend on the target effect.
+# per-gene minimum detectable effect from the stored SE and df at the
+# comparison's per-gene alpha (shared by the sensitivity plot and the card). The
+# MDE does not depend on the target effect.
 #' @noRd
-mde_from_se <- function(se_log2, df, power = 0.8, fdr = 0.05, pi1 = 0.05, alphaFixed = 0.001) {
-    alpha <- sensitivity_alpha(power, fdr, pi1, alphaFixed)[['call']]
+mde_from_se <- function(se_log2, df, alpha, power = 0.8) {
     (stats::qt(1 - alpha / 2, df) + stats::qt(power, df)) * se_log2
 }
 
@@ -53,9 +53,7 @@ facet_by_annotation <- function(p, df) {
 }
 
 #' @noRd
-power_from_se <- function(se_log2, df, target, power = 0.8, fdr = 0.05, pi1 = 0.05,
-                          alphaFixed = 0.001) {
-    alpha <- sensitivity_alpha(power, fdr, pi1, alphaFixed)[['call']]
+power_from_se <- function(se_log2, df, target, alpha) {
     ncp <- target / se_log2
     tc <- stats::qt(1 - alpha / 2, df)
     stats::pt(tc, df, ncp, lower.tail = FALSE) + stats::pt(-tc, df, ncp, lower.tail = TRUE)

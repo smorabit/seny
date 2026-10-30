@@ -9,8 +9,8 @@ estimateSensitivity(
   targetLFC = 1,
   power = 0.8,
   fdr = 0.05,
-  pi1 = 0.05,
-  alphaFixed = 0.001,
+  pi1 = "discoveries",
+  alphaFixed = NULL,
   calibrate = FALSE
 )
 }
@@ -24,22 +24,26 @@ Default 1.}
 
 \item{fdr}{Target FDR. Default 0.05.}
 
-\item{pi1}{Assumed fraction of true positives (maps FDR to a per-gene
-threshold, Jung 2005). Default 0.05.}
+\item{pi1}{Fraction of true positives that maps the FDR to a per-gene
+threshold: \code{"discoveries"} (default) estimates it per comparison as the
+fraction of genes the comparison's own DE test calls at \code{fdr}; a number
+fixes it for every comparison (falls back to 0.05 for a comparison whose
+fit has no p-values).}
 
-\item{alphaFixed}{Fixed per-gene significance level for the second MDE.
-Default 0.001. The call uses the larger MDE; \code{alphaFixed = 1} recovers the
-FDR-based MDE alone.}
+\item{alphaFixed}{Optional fixed per-gene significance level. \code{NULL} (default)
+uses the \code{pi1}-mapped level alone; a number makes the call use the stricter
+of the two (the larger MDE).}
 
 \item{calibrate}{Reserved; must be \code{FALSE} in the MVP.}
 }
 \value{
-A \code{data.frame}, one row per comparison, with \code{target_lfc},
-\code{sensitivity_fraction}, \code{median_mde} (the larger of the two per gene),
-\code{median_mde_fdr}, \code{median_mde_fixed} and \code{median_power}.
+A \code{data.frame}, one row per comparison, with \code{target_lfc}, the \code{pi1}
+and per-gene \code{alpha} used, \code{sensitivity_fraction}, \code{median_mde},
+\code{median_mde_fdr}, \code{median_mde_fixed} (\code{NA} without \code{alphaFixed}) and
+\code{median_power}.
 }
 \description{
-From the null-model variance fits (\code{\link[=estimateVariance]{estimateVariance()}}), computes the
+From the variance fits (\code{\link[=estimateVariance]{estimateVariance()}}), computes the
 analytic standard error of the two-group log2 fold-change contrast per gene
 (\verb{SE^2 = 1/sum_A w + 1/sum_B w}, \code{w = 1/(1/mu + phi)}, phi the dispersion with the
 condition in the design), the minimum
@@ -49,10 +53,15 @@ genes detectable at \code{targetLFC}. Uncalibrated in the MVP (\code{calibrate =
 the empirical calibration from E2/E7 is applied in a later phase.
 }
 \details{
-Two MDEs are computed per gene: an FDR-based one (the FDR mapped to a per-gene
-threshold through the assumed fraction of true positives \code{pi1}) and one at a
-fixed per-gene \code{alphaFixed}. The call uses the larger of the two (the stricter
-threshold), because the FDR mapping is optimistic when few genes are truly
-DE: then BH rejects far fewer tests than \code{pi1} implies (E4, male vs female in
-blood: realised BH threshold ~1e-4 vs the mapped ~2e-3).
+The FDR target is mapped to a per-gene significance level through the
+fraction of true positives \code{pi1} (Jung 2005), capped at \code{fdr} (BH never tests
+a gene at more than the FDR level). BH's realised per-gene threshold scales
+with the fraction of genes it calls, so no fixed \code{pi1} suits every contrast: a
+sparse contrast (male vs female in blood, realised threshold ~1e-4) makes a
+fixed 5\% optimistic, a dense one makes it conservative. By default
+(\code{pi1 = "discoveries"}) each comparison uses its own fraction of BH discoveries,
+\code{R / m} from the DE test of the chosen method at \code{fdr} (floored at \code{1 / m}), so
+power is evaluated at the threshold BH actually uses there. On OneK1K with 0.5-20\\%
+of genes injected as DE and on male vs female it was the best calibrated of the
+rules tested (E4b).
 }

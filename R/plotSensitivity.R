@@ -13,9 +13,9 @@
 #' @importFrom ggplot2 .data
 plotSensitivity <- function(res) {
     pg <- require_attr(res, 'pergene')
-    meta <- as.data.frame(res)[, c('comparison', 'cluster', 'annotation', 'target_lfc')]
+    meta <- as.data.frame(res)[, c('comparison', 'cluster', 'annotation', 'target_lfc', 'alpha')]
     pg <- merge(pg, meta, by = 'comparison')
-    pg$mde <- mde_from_se(pg$se_log2, pg$df)
+    pg$mde <- mde_from_se(pg$se_log2, pg$df, pg$alpha)
     target <- stats::median(pg$target_lfc)
     ymax <- stats::quantile(pg$mde, 0.98, na.rm = TRUE)
     p <- ggplot2::ggplot(pg, ggplot2::aes(x = .data$acpm, y = .data$mde)) +

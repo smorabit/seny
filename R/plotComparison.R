@@ -59,7 +59,7 @@ sens_one <- function(res, comparison) {
     pg <- pg[pg$comparison == comparison, , drop = FALSE]
     df <- as.data.frame(res)
     target <- df$target_lfc[df$comparison == comparison][1]
-    pg$mde <- mde_from_se(pg$se_log2, pg$df)
+    pg$mde <- mde_from_se(pg$se_log2, pg$df, df$alpha[df$comparison == comparison][1])
     ymax <- stats::quantile(pg$mde, 0.98, na.rm = TRUE)
     ggplot2::ggplot(pg, ggplot2::aes(x = .data$acpm, y = .data$mde)) +
         ggplot2::geom_point(size = 0.5, alpha = 0.3, colour = '#4C72B0') +

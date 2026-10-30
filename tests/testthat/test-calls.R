@@ -115,14 +115,62 @@ test_that('the call uses the larger of the FDR-based and fixed-alpha MDEs', {
     x <- pbSetup(sce, sample = 'donor', group = 'condition', annotations = 'cell_type',
                  thetaReps = 0)
     v <- estimateVariance(x, method = 'edgeR')
-    both <- estimateSensitivity(v, targetLFC = 1)
-    fdr_only <- estimateSensitivity(v, targetLFC = 1, alphaFixed = 1)
+    both <- estimateSensitivity(v, targetLFC = 1, pi1 = 0.05, alphaFixed = 0.001)
+    fdr_only <- estimateSensitivity(v, targetLFC = 1, pi1 = 0.05)
     # alpha_fdr ~ 0.0022 > 0.001, so the fixed-alpha MDE is the larger one
     expect_equal(both$median_mde, both$median_mde_fixed)
     expect_true(all(both$median_mde_fixed > both$median_mde_fdr))
     expect_true(all(both$sensitivity_fraction <= fdr_only$sensitivity_fraction))
     expect_equal(fdr_only$median_mde, fdr_only$median_mde_fdr)
+    expect_true(all(is.na(fdr_only$median_mde_fixed)))
     # a lenient fixed alpha leaves the FDR-based MDE in charge
-    loose <- estimateSensitivity(v, targetLFC = 1, alphaFixed = 0.01)
+    loose <- estimateSensitivity(v, targetLFC = 1, pi1 = 0.05, alphaFixed = 0.01)
     expect_equal(loose$median_mde, loose$median_mde_fdr)
+})
+
+test_that('pi1 = "discoveries" uses each comparison\'s fraction of BH discoveries', {
+    sce <- sim_sce(n_per_group = 6, n_genes = 300, n_de = 60, cells_per = 40, seed = 12)
+    x <- pbSetup(sce, sample = 'donor', group = 'condition', annotations = 'cell_type',
+                 thetaReps = 0)
+    for (cur_method in c('edgeR', 'deseq2', 'voom')) {
+        v <- estimateVariance(x, method = cur_method)
+        s <- estimateSensitivity(v, targetLFC = 1)
+        for (key in names(v$pergene)) {
+            p <- v$pergene[[key]]$pvalue
+            p <- p[!is.na(p)]
+            expect_gt(length(p), 0)
+            expected <- max(sum(p.adjust(p, 'BH') < 0.05) / length(p), 1 / length(p))
+            expect_equal(s$pi1[s$comparison == key], expected)
+        }
+        # alpha follows the Jung mapping at that pi1
+        r <- s[1, ]
+        expect_equal(r$alpha, 0.05 * 0.8 * r$pi1 / (0.95 * (1 - r$pi1)))
+    }
+})
+
+test_that('more true DE genes raise pi1, alpha and sensitivity under "discoveries"', {
+    fit_of <- function(n_de) {
+        sce <- sim_sce(n_per_group = 6, n_genes = 300, n_de = n_de, cells_per = 40, seed = 3)
+        x <- pbSetup(sce, sample = 'donor', group = 'condition', annotations = 'cell_type',
+                     thetaReps = 0)
+        estimateVariance(x, method = 'edgeR')
+    }
+    v_sparse <- fit_of(3)
+    v_dense <- fit_of(90)
+    sparse <- estimateSensitivity(v_sparse, targetLFC = 1)
+    dense <- estimateSensitivity(v_dense, targetLFC = 1)
+    expect_true(all(dense$pi1 > sparse$pi1))
+    expect_true(all(dense$alpha > sparse$alpha))
+    expect_true(all(dense$sensitivity_fraction >= sparse$sensitivity_fraction))
+    # a fixed pi1 ignores the contrast
+    expect_true(all(estimateSensitivity(v_dense, pi1 = 0.05)$pi1 == 0.05))
+})
+
+test_that('the pi1-mapped alpha never exceeds the FDR level', {
+    a <- sensitivity_alpha(power = 0.8, fdr = 0.05, pi1 = 0.9)
+    expect_equal(a[['fdr']], 0.05)
+    expect_equal(a[['call']], 0.05)
+    expect_true(is.na(a[['fixed']]))
+    expect_error(estimateSensitivity(list(pergene = list(), summary = data.frame(comparison = character(0))),
+                                     pi1 = 'storey'), 'discoveries')
 })

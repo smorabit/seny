@@ -25,7 +25,9 @@
 #'   `"dreamlet"`). Default `"edgeR"`.
 #' @return A list with `summary` (a `data.frame`, one row per comparison, with the
 #'   `method`, the NB decomposition and regime) and `pergene` (a named list of
-#'   per-comparison fits carrying `se_log2` and `df` for sensitivity).
+#'   per-comparison fits carrying `se_log2` and `df` for sensitivity, and the
+#'   method's own p-values for the condition, `pvalue`, behind the
+#'   `pi1 = "discoveries"` mapping in [estimateSensitivity()]).
 #' @export
 #' @importFrom edgeR DGEList filterByExpr calcNormFactors estimateDisp glmQLFit aveLogCPM cpm
 estimateVariance <- function(x, method = c('edgeR', 'deseq2', 'voom', 'dreamlet')) {
@@ -152,13 +154,15 @@ fit_edger <- function(d) {
     df_prior <- if (is.null(full)) stats::median(qfit$df.prior) else full$df_prior
     df <- (length(d$group) - 2) + df_prior
     list(genes = g, se_log2 = nb_se(mu, phi_se, d$group), df = rep(df, length(g)),
+         pvalue = full$pvalue,
          group = d$group, n_i = d$nCells, nb = TRUE, phi_total = phi, phi_se = phi_se,
          theta = align_theta(d$theta, g), mean_count = rowMeans(d$counts[g, , drop = FALSE]),
          acpm = edgeR::aveLogCPM(y))
 }
 
-#' Tagwise dispersion and QL prior df with the condition in the design; NULL
-#' when the full design is not estimable (the caller falls back to the null fit)
+#' Tagwise dispersion, QL prior df and the condition's QL-test p-values with the
+#' condition in the design; NULL when the full design is not estimable (the
+#' caller falls back to the null fit)
 #' @noRd
 disp_full <- function(y, d) {
     bd <- build_design(d$group, d$covariates)
@@ -166,7 +170,9 @@ disp_full <- function(y, d) {
     tryCatch({
         yf <- edgeR::estimateDisp(y, bd$design, robust = TRUE)
         qf <- edgeR::glmQLFit(yf, bd$design, robust = TRUE)
-        list(phi = yf$tagwise.dispersion, df_prior = stats::median(qf$df.prior))
+        qt <- edgeR::glmQLFTest(qf, coef = bd$coef)
+        list(phi = yf$tagwise.dispersion, df_prior = stats::median(qf$df.prior),
+             pvalue = stats::setNames(qt$table$PValue, rownames(qt)))
     }, error = function(e) NULL)
 }
 
@@ -184,6 +190,7 @@ fit_deseq2 <- function(d) {
     dds <- DESeq2::DESeqDataSetFromMatrix(counts, cd, stats::as.formula(paste('~', rhs)))
     dds <- DESeq2::estimateSizeFactors(dds, type = 'poscounts')
     dds <- suppressMessages(DESeq2::DESeq(dds, quiet = TRUE))
+    wald <- DESeq2::results(dds, name = utils::tail(DESeq2::resultsNames(dds), 1))
     phi <- DESeq2::dispersions(dds)
     mu <- SummarizedExperiment::assays(dds)[['mu']]
     ok <- is.finite(phi) & rowSums(is.na(mu)) == 0
@@ -192,6 +199,7 @@ fit_deseq2 <- function(d) {
     n_cov <- if (is.null(d$covariates)) 0 else ncol(d$covariates)
     df <- length(d$group) - 2 - n_cov
     list(genes = g, se_log2 = nb_se(mu, phi, d$group), df = rep(df, length(g)),
+         pvalue = stats::setNames(wald$pvalue[ok], g),
          group = d$group, n_i = d$nCells, nb = TRUE, phi_total = phi,
          theta = align_theta(d$theta, g), mean_count = rowMeans(as.matrix(d$counts)[g, , drop = FALSE]),
          acpm = edgeR::aveLogCPM(edgeR::DGEList(as.matrix(d$counts)[g, , drop = FALSE])))
@@ -220,8 +228,8 @@ fit_voom <- function(d, aggregation) {
     }
     g <- rownames(fit$coefficients)
     se_log2 <- fit$stdev.unscaled[, coef] * sqrt(fit$s2.post)
-    list(genes = g, se_log2 = se_log2, df = fit$df.total, group = d$group,
-         n_i = d$nCells, nb = FALSE, acpm = fit$Amean)
+    list(genes = g, se_log2 = se_log2, df = fit$df.total, pvalue = fit$p.value[, coef],
+         group = d$group, n_i = d$nCells, nb = FALSE, acpm = fit$Amean)
 }
 
 #' Null design: covariates only, no condition term
