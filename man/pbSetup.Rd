@@ -52,7 +52,11 @@ dropped. Default 10.}
 \item{assayName}{Name of the raw-count assay in \code{sce}. Default \code{"counts"}.}
 
 \item{thetaCells, thetaDonors, thetaReps}{Subsample size (cells per donor,
-donors) and number of draws for the cell-level \code{theta} ensemble.}
+donors) and number of draws for the cell-level \code{theta} ensemble.
+\code{thetaReps = 0} skips the theta fit (by far the slowest step): the
+adequacy call is unchanged, since the sensitivity uses the total
+pseudobulk dispersion, but the depth/cell/donor variance decomposition
+from \code{\link[=estimateVariance]{estimateVariance()}} is then \code{NA}.}
 
 \item{BPPARAM}{A \code{BiocParallelParam} object for the per-cluster theta
 estimation. Default \code{\link[BiocParallel:SerialParam]{BiocParallel::SerialParam()}}.}

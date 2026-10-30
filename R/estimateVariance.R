@@ -1,8 +1,13 @@
 #' Layer 4 (variance): null-model dispersion, decomposition and per-gene SE
 #'
-#' For every comparison, fits the null model with the chosen DE method and returns
-#' the per-gene standard error of the two-group log2 fold-change contrast (used by
-#' [estimateSensitivity()]). For the count methods (`edgeR`, `deseq2`) it also
+#' For every comparison, fits the chosen DE method and returns the per-gene
+#' standard error of the two-group log2 fold-change contrast (used by
+#' [estimateSensitivity()]). The SE uses the dispersion estimated with the
+#' condition in the design, as the user's test sees it, evaluated at the
+#' condition-blind (null-model) fitted means. Power is always computed at the
+#' target effect, never the observed one. A null-model dispersion would absorb
+#' real effects as noise and understate power exactly where DE is strong. The
+#' variance decomposition stays condition-blind. For the count methods (`edgeR`, `deseq2`) it also
 #' splits the pseudobulk negative-binomial dispersion `phi_total` into a
 #' cell-heterogeneity term (`theta`/n, with the cell-level `theta` from [pbSetup()])
 #' and a between-donor term `phi_donor` (moment estimate
@@ -65,6 +70,11 @@ variance_summary <- function(key, method, fit) {
         share_depth = NA_real_, share_cell = NA_real_, share_donor = NA_real_,
         regime = NA_character_, stringsAsFactors = FALSE)
     if (is.null(fit) || !isTRUE(fit$nb)) return(na_row)
+    # theta skipped (thetaReps = 0): total dispersion only, no decomposition
+    if (all(is.na(fit$theta))) {
+        na_row$median_phi_total <- stats::median(fit$phi_total)
+        return(na_row)
+    }
 
     inv_n <- mean(1 / fit$n_i)
     phi_donor <- pmax(0, fit$phi_total - fit$theta * inv_n)
@@ -104,9 +114,11 @@ nb_se <- function(mu, phi, group) {
     sqrt(1 / sum_a + 1 / sum_b) / log(2)
 }
 
-#' Align the stored cell-level theta to a set of genes (missing -> 0)
+#' Align the stored cell-level theta to a set of genes (missing -> 0; all NA
+#' when theta was skipped with thetaReps = 0)
 #' @noRd
 align_theta <- function(theta_df, genes) {
+    if (is.null(theta_df)) return(rep(NA_real_, length(genes)))
     m <- stats::setNames(theta_df$theta, theta_df$gene)
     t <- unname(m[genes]); t[is.na(t)] <- 0
     t
@@ -117,19 +129,45 @@ align_theta <- function(theta_df, genes) {
 fit_edger <- function(d) {
     design <- build_null_design(d$covariates, length(d$group))
     y <- edgeR::DGEList(d$counts)
-    keep <- edgeR::filterByExpr(y, design)
+    # filter by condition group, as the user's DE (~ group) and layer 2's n_testable
+    # do; the null design alone demands expression in nearly every sample and drops
+    # genes expressed mainly in one condition, the strongest DE genes
+    keep <- edgeR::filterByExpr(y, group = d$group)
     y <- y[keep, , keep.lib.sizes = FALSE]
     y <- edgeR::calcNormFactors(y)
-    y <- edgeR::estimateDisp(y, design, robust = TRUE)
-    qfit <- edgeR::glmQLFit(y, design, robust = TRUE)
+    # null fit (condition-blind): the fitted means for the SE and phi_total for the
+    # decomposition diagnostics
+    y_null <- edgeR::estimateDisp(y, design, robust = TRUE)
+    qfit <- edgeR::glmQLFit(y_null, design, robust = TRUE)
     g <- rownames(y)
-    phi <- y$tagwise.dispersion
+    phi <- y_null$tagwise.dispersion
     mu <- qfit$fitted.values
-    df <- (length(d$group) - 2) + stats::median(qfit$df.prior)
-    list(genes = g, se_log2 = nb_se(mu, phi, d$group), df = rep(df, length(g)),
-         group = d$group, n_i = d$nCells, nb = TRUE, phi_total = phi,
+    # full fit (condition in the design): the dispersion and QL prior df behind the
+    # SE, as the user's test sees them. under the null fit a large true effect is
+    # absorbed as noise and inflates the SE of exactly the strongly DE genes
+    # (E4: ceiling genes predicted 0.22 vs detected 0.77 at 3 donors per group).
+    # power stays evaluated at the target effect, never the observed one.
+    full <- disp_full(y, d)
+    phi_se <- if (is.null(full)) phi else full$phi
+    df_prior <- if (is.null(full)) stats::median(qfit$df.prior) else full$df_prior
+    df <- (length(d$group) - 2) + df_prior
+    list(genes = g, se_log2 = nb_se(mu, phi_se, d$group), df = rep(df, length(g)),
+         group = d$group, n_i = d$nCells, nb = TRUE, phi_total = phi, phi_se = phi_se,
          theta = align_theta(d$theta, g), mean_count = rowMeans(d$counts[g, , drop = FALSE]),
          acpm = edgeR::aveLogCPM(y))
+}
+
+#' Tagwise dispersion and QL prior df with the condition in the design; NULL
+#' when the full design is not estimable (the caller falls back to the null fit)
+#' @noRd
+disp_full <- function(y, d) {
+    bd <- build_design(d$group, d$covariates)
+    if (!bd$estimable) return(NULL)
+    tryCatch({
+        yf <- edgeR::estimateDisp(y, bd$design, robust = TRUE)
+        qf <- edgeR::glmQLFit(yf, bd$design, robust = TRUE)
+        list(phi = yf$tagwise.dispersion, df_prior = stats::median(qf$df.prior))
+    }, error = function(e) NULL)
 }
 
 #' DESeq2 null fit: MAP-shrunk NB dispersion and fitted means (residual df)

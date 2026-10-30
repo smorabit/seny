@@ -32,6 +32,10 @@
 #' @param assayName Name of the raw-count assay in `sce`. Default `"counts"`.
 #' @param thetaCells,thetaDonors,thetaReps Subsample size (cells per donor,
 #'   donors) and number of draws for the cell-level `theta` ensemble.
+#'   `thetaReps = 0` skips the theta fit (by far the slowest step): the
+#'   adequacy call is unchanged, since the sensitivity uses the total
+#'   pseudobulk dispersion, but the depth/cell/donor variance decomposition
+#'   from [estimateVariance()] is then `NA`.
 #' @param BPPARAM A `BiocParallelParam` object for the per-cluster theta
 #'   estimation. Default [BiocParallel::SerialParam()].
 #'
@@ -46,6 +50,9 @@ pbSetup <- function(sce, sample, group, annotations, covariates = character(0),
                     thetaCells = 50, thetaDonors = 50, thetaReps = 3,
                     BPPARAM = BiocParallel::SerialParam()) {
     aggregation <- match.arg(aggregation)
+    if (length(thetaReps) != 1 || is.na(thetaReps) || thetaReps < 0 || thetaReps != round(thetaReps)) {
+        stop('thetaReps must be a non-negative integer (0 skips the theta fit)')
+    }
     cd <- as.data.frame(SummarizedExperiment::colData(sce))
     need <- c(sample, group, annotations, covariates)
     miss <- setdiff(need, colnames(cd))
@@ -112,13 +119,17 @@ build_annotation_set <- function(counts, cd, sample, group, ann, covariates,
     pb <- pb[, keep_pb, drop = FALSE]
     meta <- meta[keep_pb, , drop = FALSE]
 
-    # per-cluster cell-level theta, from the cells of this annotation level
-    thetas <- lapply(unique(meta$cluster), function(cl) {
-        sel <- cluster == cl
-        estimate_cell_theta(counts[, sel], cd[[sample]][sel], n_rep = thetaReps,
-                            max_cells = thetaCells, max_donors = thetaDonors)
-    })
-    names(thetas) <- unique(meta$cluster)
+    # per-cluster cell-level theta, from the cells of this annotation level.
+    # thetaReps = 0 skips it: the call does not use theta, only the decomposition
+    thetas <- NULL
+    if (thetaReps > 0) {
+        thetas <- lapply(unique(meta$cluster), function(cl) {
+            sel <- cluster == cl
+            estimate_cell_theta(counts[, sel], cd[[sample]][sel], n_rep = thetaReps,
+                                max_cells = thetaCells, max_donors = thetaDonors)
+        })
+        names(thetas) <- unique(meta$cluster)
+    }
 
     se <- SummarizedExperiment::SummarizedExperiment(
         assays = list(counts = pb),

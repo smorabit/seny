@@ -11,7 +11,10 @@
 #' @noRd
 enumerate_comparisons <- function(se) {
     md <- S4Vectors::metadata(se)
-    clusters <- unique(as.character(SummarizedExperiment::colData(se)$cluster))
+    # include clusters that lost every pseudobulk to minCells, so they are called
+    # Invalid rather than silently dropped
+    clusters <- unique(c(as.character(SummarizedExperiment::colData(se)$cluster),
+                         as.character(md$cell_counts$cluster)))
     rows <- list()
     for (cl in clusters) for (ct in md$contrasts) {
         rows[[length(rows) + 1]] <- data.frame(

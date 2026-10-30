@@ -18,9 +18,14 @@ A list with \code{summary} (a \code{data.frame}, one row per comparison, with th
 per-comparison fits carrying \code{se_log2} and \code{df} for sensitivity).
 }
 \description{
-For every comparison, fits the null model with the chosen DE method and returns
-the per-gene standard error of the two-group log2 fold-change contrast (used by
-\code{\link[=estimateSensitivity]{estimateSensitivity()}}). For the count methods (\code{edgeR}, \code{deseq2}) it also
+For every comparison, fits the chosen DE method and returns the per-gene
+standard error of the two-group log2 fold-change contrast (used by
+\code{\link[=estimateSensitivity]{estimateSensitivity()}}). The SE uses the dispersion estimated with the
+condition in the design, as the user's test sees it, evaluated at the
+condition-blind (null-model) fitted means. Power is always computed at the
+target effect, never the observed one. A null-model dispersion would absorb
+real effects as noise and understate power exactly where DE is strong. The
+variance decomposition stays condition-blind. For the count methods (\code{edgeR}, \code{deseq2}) it also
 splits the pseudobulk negative-binomial dispersion \code{phi_total} into a
 cell-heterogeneity term (\code{theta}/n, with the cell-level \code{theta} from \code{\link[=pbSetup]{pbSetup()}})
 and a between-donor term \code{phi_donor} (moment estimate

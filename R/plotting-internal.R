@@ -37,9 +37,9 @@ require_attr <- function(res, which) {
 # per-gene minimum detectable effect from the stored SE and df (shared by the
 # sensitivity plot and the card). The MDE does not depend on the target effect.
 #' @noRd
-mde_from_se <- function(se_log2, df, power = 0.8, fdr = 0.05, pi1 = 0.05) {
-    alpha_star <- fdr * power * pi1 / ((1 - fdr) * (1 - pi1))
-    (stats::qt(1 - alpha_star / 2, df) + stats::qt(power, df)) * se_log2
+mde_from_se <- function(se_log2, df, power = 0.8, fdr = 0.05, pi1 = 0.05, alphaFixed = 0.001) {
+    alpha <- sensitivity_alpha(power, fdr, pi1, alphaFixed)[['call']]
+    (stats::qt(1 - alpha / 2, df) + stats::qt(power, df)) * se_log2
 }
 
 # add a per-annotation facet only when there is more than one annotation set
@@ -53,10 +53,11 @@ facet_by_annotation <- function(p, df) {
 }
 
 #' @noRd
-power_from_se <- function(se_log2, df, target, power = 0.8, fdr = 0.05, pi1 = 0.05) {
-    alpha_star <- fdr * power * pi1 / ((1 - fdr) * (1 - pi1))
+power_from_se <- function(se_log2, df, target, power = 0.8, fdr = 0.05, pi1 = 0.05,
+                          alphaFixed = 0.001) {
+    alpha <- sensitivity_alpha(power, fdr, pi1, alphaFixed)[['call']]
     ncp <- target / se_log2
-    tc <- stats::qt(1 - alpha_star / 2, df)
+    tc <- stats::qt(1 - alpha / 2, df)
     stats::pt(tc, df, ncp, lower.tail = FALSE) + stats::pt(-tc, df, ncp, lower.tail = TRUE)
 }
 

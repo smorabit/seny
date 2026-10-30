@@ -29,7 +29,8 @@ callComparisons <- function(design, pseudobulk, variance, sensitivity,
         flags <- character(0)
         confounded <- (!is.na(r$max_cramerV) && r$max_cramerV >= th$cramerV) ||
                       (!is.na(r$max_vif) && r$max_vif >= th$vif)
-        imbalanced <- !is.na(r$cells_cond_cor) && abs(r$cells_cond_cor) >= th$cellsCondCor
+        cells_cut <- cells_cond_cutoff(r$nA + r$nB, th$cellsCondCor, th$cellsCondAlpha)
+        imbalanced <- !is.na(r$cells_cond_cor) && abs(r$cells_cond_cor) >= cells_cut
         few_testable <- !is.na(r$n_testable) && r$n_testable < th$minTestable
         underpowered <- !is.na(r$sensitivity_fraction) && r$sensitivity_fraction < th$sensitivity
         too_few <- is.na(r$estimable) || !r$estimable ||
@@ -37,8 +38,8 @@ callComparisons <- function(design, pseudobulk, variance, sensitivity,
 
         if (confounded) flags <- c(flags, sprintf('confounded (Cramer V %.2f, VIF %.1f)',
                                                   r$max_cramerV, r$max_vif))
-        if (imbalanced) flags <- c(flags, sprintf('cell-count imbalance correlated with condition (r %.2f; consider sample weights)',
-                                                  r$cells_cond_cor))
+        if (imbalanced) flags <- c(flags, sprintf('cell-count imbalance correlated with condition (r %.2f, cutoff %.2f at %d samples; consider sample weights)',
+                                                  r$cells_cond_cor, cells_cut, r$nA + r$nB))
         if (few_testable) flags <- c(flags, sprintf('too few testable genes (%d)', r$n_testable))
         if (underpowered) flags <- c(flags, sprintf('underpowered (%.0f%% of genes detectable at log2FC %.2g)',
                                                     100 * r$sensitivity_fraction, r$target_lfc))

@@ -19,7 +19,9 @@ assessAll(
   power = 0.8,
   fdr = 0.05,
   pi1 = 0.05,
+  alphaFixed = 0.001,
   thresholds = defaultThresholds(),
+  thetaReps = 3,
   BPPARAM = BiocParallel::SerialParam()
 )
 }
@@ -56,7 +58,8 @@ require \code{aggregation = "sum"}; \code{aggregation = "mean"} requires \code{"
 
 \item{targetLFC}{Primary target absolute log2 fold-change driving the call.}
 
-\item{power, fdr, pi1}{Sensitivity settings passed to \code{\link[=estimateSensitivity]{estimateSensitivity()}}.}
+\item{power, fdr, pi1, alphaFixed}{Sensitivity settings passed to
+\code{\link[=estimateSensitivity]{estimateSensitivity()}}.}
 
 \item{thresholds}{A list from \code{\link[=defaultThresholds]{defaultThresholds()}}.}
 

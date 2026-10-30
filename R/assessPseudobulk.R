@@ -37,9 +37,12 @@ assessPseudobulk <- function(x) {
                              frac_testable = NA_real_))
             }
             cond <- as.integer(d$group == 'B')
-            med_a <- stats::median(d$nCells[cond == 0])
-            med_b <- stats::median(d$nCells[cond == 1])
-            cells_ratio <- if (max(med_a, med_b) > 0) min(med_a, med_b) / max(med_a, med_b) else 0
+            # one group can lose every sample to minCells; the ratio is then undefined
+            cells_ratio <- if (length(unique(cond)) < 2) NA_real_ else {
+                med_a <- stats::median(d$nCells[cond == 0])
+                med_b <- stats::median(d$nCells[cond == 1])
+                if (max(med_a, med_b) > 0) min(med_a, med_b) / max(med_a, med_b) else 0
+            }
 
             # fraction of this cluster's samples (both groups, pre-filter) below minCells
             below <- cc[cc$cluster == cmp$cluster[i] &
