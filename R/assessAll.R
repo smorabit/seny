@@ -14,6 +14,9 @@
 #' @param power,fdr,pi1,alphaFixed Sensitivity settings passed to
 #'   [estimateSensitivity()].
 #' @param thresholds A list from [defaultThresholds()].
+#' @param thetaReps Subsample repeats for the cell-level theta fit, passed to
+#'   [pbSetup()]; `0` skips it (the call is unchanged, the variance
+#'   decomposition is `NA`).
 #' @return A [S4Vectors::DataFrame], one row per comparison, with the metrics,
 #'   the `call` and a `reason`. The [pbSetup()] object is attached as
 #'   `attr(, "pb")` for inspection.
@@ -28,7 +31,7 @@ assessAll <- function(sce, sample, group, annotations, covariates = character(0)
                       contrasts = NULL, minCells = 10, aggregation = c('sum', 'mean'),
                       assayName = 'counts', method = c('edgeR', 'deseq2', 'voom'),
                       targetLFC = 1, power = 0.8, fdr = 0.05,
-                      pi1 = 0.05, alphaFixed = 0.001, thresholds = defaultThresholds(), thetaReps = 3,
+                      pi1 = 'discoveries', alphaFixed = NULL, thresholds = defaultThresholds(), thetaReps = 3,
                       BPPARAM = BiocParallel::SerialParam()) {
     method <- match.arg(method)
     x <- pbSetup(sce, sample = sample, group = group, annotations = annotations,

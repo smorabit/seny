@@ -18,8 +18,8 @@ assessAll(
   targetLFC = 1,
   power = 0.8,
   fdr = 0.05,
-  pi1 = 0.05,
-  alphaFixed = 0.001,
+  pi1 = "discoveries",
+  alphaFixed = NULL,
   thresholds = defaultThresholds(),
   thetaReps = 3,
   BPPARAM = BiocParallel::SerialParam()
@@ -62,6 +62,10 @@ require \code{aggregation = "sum"}; \code{aggregation = "mean"} requires \code{"
 \code{\link[=estimateSensitivity]{estimateSensitivity()}}.}
 
 \item{thresholds}{A list from \code{\link[=defaultThresholds]{defaultThresholds()}}.}
+
+\item{thetaReps}{Subsample repeats for the cell-level theta fit, passed to
+\code{\link[=pbSetup]{pbSetup()}}; \code{0} skips it (the call is unchanged, the variance
+decomposition is \code{NA}).}
 
 \item{BPPARAM}{A \code{BiocParallelParam} object for the per-cluster theta
 estimation. Default \code{\link[BiocParallel:SerialParam]{BiocParallel::SerialParam()}}.}
