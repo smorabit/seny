@@ -43,7 +43,10 @@ estimateVariance(x, method = c("edgeR", "deseq2", "voom", "dreamlet"))
 
 A list with `summary` (a `data.frame`, one row per comparison, with the
 `method`, the NB decomposition and regime) and `pergene` (a named list
-of per-comparison fits carrying `se_log2` and `df` for sensitivity).
+of per-comparison fits carrying `se_log2` and `df` for sensitivity, and
+the method's own p-values for the condition, `pvalue`, behind the
+`pi1 = "discoveries"` mapping in
+[`estimateSensitivity()`](https://smorabit.github.io/seny/reference/estimateSensitivity.md)).
 
 ## Details
 

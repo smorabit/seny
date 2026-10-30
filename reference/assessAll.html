@@ -66,8 +66,8 @@ Invalid call per cluster-by-contrast comparison.</p>
 <span>  targetLFC <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  power <span class="op">=</span> <span class="fl">0.8</span>,</span>
 <span>  fdr <span class="op">=</span> <span class="fl">0.05</span>,</span>
-<span>  pi1 <span class="op">=</span> <span class="fl">0.05</span>,</span>
-<span>  alphaFixed <span class="op">=</span> <span class="fl">0.001</span>,</span>
+<span>  pi1 <span class="op">=</span> <span class="st">"discoveries"</span>,</span>
+<span>  alphaFixed <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  thresholds <span class="op">=</span> <span class="fu"><a href="defaultThresholds.html">defaultThresholds</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  thetaReps <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  BPPARAM <span class="op">=</span> <span class="fu">BiocParallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/BiocParallel/man/SerialParam-class.html" class="external-link">SerialParam</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -139,6 +139,12 @@ require <code>aggregation = "sum"</code>; <code>aggregation = "mean"</code> requ
 
 <dt id="arg-thresholds">thresholds<a class="anchor" aria-label="anchor" href="#arg-thresholds"></a></dt>
 <dd><p>A list from <code><a href="defaultThresholds.html">defaultThresholds()</a></code>.</p></dd>
+
+
+<dt id="arg-thetareps">thetaReps<a class="anchor" aria-label="anchor" href="#arg-thetareps"></a></dt>
+<dd><p>Subsample repeats for the cell-level theta fit, passed to
+<code><a href="pbSetup.html">pbSetup()</a></code>; <code>0</code> skips it (the call is unchanged, the variance
+decomposition is <code>NA</code>).</p></dd>
 
 
 <dt id="arg-bpparam">BPPARAM<a class="anchor" aria-label="anchor" href="#arg-bpparam"></a></dt>

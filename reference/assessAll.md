@@ -31,8 +31,8 @@ assessAll(
   targetLFC = 1,
   power = 0.8,
   fdr = 0.05,
-  pi1 = 0.05,
-  alphaFixed = 0.001,
+  pi1 = "discoveries",
+  alphaFixed = NULL,
   thresholds = defaultThresholds(),
   thetaReps = 3,
   BPPARAM = BiocParallel::SerialParam()
@@ -108,6 +108,13 @@ assessAll(
 
   A list from
   [`defaultThresholds()`](https://smorabit.github.io/seny/reference/defaultThresholds.md).
+
+- thetaReps:
+
+  Subsample repeats for the cell-level theta fit, passed to
+  [`pbSetup()`](https://smorabit.github.io/seny/reference/pbSetup.md);
+  `0` skips it (the call is unchanged, the variance decomposition is
+  `NA`).
 
 - BPPARAM:
 
