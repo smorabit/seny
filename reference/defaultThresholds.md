@@ -20,6 +20,10 @@ threshold), `sensitivity` (sensitivity fraction at or above which a
 comparison is adequately powered), `minSamples` (fewer samples per group
 is Invalid), `cellsCondCor` (absolute correlation of log cells per
 sample with condition above which cell-count imbalance is flagged
-Caution), and `minTestable` (fewer testable genes is Underpowered). The
-last two gate the layer-2 metrics and, like the others, are provisional
-placeholders until E1-E8.
+Caution), `cellsCondAlpha` (the correlation must also exceed the
+critical value at this level for the comparison's sample size, so chance
+correlations in small designs are not flagged: the cutoff is
+`max(cellsCondCor, r_crit(n))`, about 0.81 at 6 samples and
+`cellsCondCor` from ~16 samples), and `minTestable` (fewer testable
+genes is Underpowered). The layer-2 values, like the others, are
+provisional placeholders until E1-E8.

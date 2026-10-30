@@ -67,7 +67,9 @@ Invalid call per cluster-by-contrast comparison.</p>
 <span>  power <span class="op">=</span> <span class="fl">0.8</span>,</span>
 <span>  fdr <span class="op">=</span> <span class="fl">0.05</span>,</span>
 <span>  pi1 <span class="op">=</span> <span class="fl">0.05</span>,</span>
+<span>  alphaFixed <span class="op">=</span> <span class="fl">0.001</span>,</span>
 <span>  thresholds <span class="op">=</span> <span class="fu"><a href="defaultThresholds.html">defaultThresholds</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  thetaReps <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  BPPARAM <span class="op">=</span> <span class="fu">BiocParallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/BiocParallel/man/SerialParam-class.html" class="external-link">SerialParam</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -130,8 +132,9 @@ require <code>aggregation = "sum"</code>; <code>aggregation = "mean"</code> requ
 <dd><p>Primary target absolute log2 fold-change driving the call.</p></dd>
 
 
-<dt id="arg-power-fdr-pi-">power, fdr, pi1<a class="anchor" aria-label="anchor" href="#arg-power-fdr-pi-"></a></dt>
-<dd><p>Sensitivity settings passed to <code><a href="estimateSensitivity.html">estimateSensitivity()</a></code>.</p></dd>
+<dt id="arg-power-fdr-pi-alphafixed">power, fdr, pi1, alphaFixed<a class="anchor" aria-label="anchor" href="#arg-power-fdr-pi-alphafixed"></a></dt>
+<dd><p>Sensitivity settings passed to
+<code><a href="estimateSensitivity.html">estimateSensitivity()</a></code>.</p></dd>
 
 
 <dt id="arg-thresholds">thresholds<a class="anchor" aria-label="anchor" href="#arg-thresholds"></a></dt>

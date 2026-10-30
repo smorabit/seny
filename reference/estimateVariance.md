@@ -1,12 +1,17 @@
 # Layer 4 (variance): null-model dispersion, decomposition and per-gene SE
 
-For every comparison, fits the null model with the chosen DE method and
-returns the per-gene standard error of the two-group log2 fold-change
-contrast (used by
+For every comparison, fits the chosen DE method and returns the per-gene
+standard error of the two-group log2 fold-change contrast (used by
 [`estimateSensitivity()`](https://smorabit.github.io/seny/reference/estimateSensitivity.md)).
-For the count methods (`edgeR`, `deseq2`) it also splits the pseudobulk
-negative-binomial dispersion `phi_total` into a cell-heterogeneity term
-(`theta`/n, with the cell-level `theta` from
+The SE uses the dispersion estimated with the condition in the design,
+as the user's test sees it, evaluated at the condition-blind
+(null-model) fitted means. Power is always computed at the target
+effect, never the observed one. A null-model dispersion would absorb
+real effects as noise and understate power exactly where DE is strong.
+The variance decomposition stays condition-blind. For the count methods
+(`edgeR`, `deseq2`) it also splits the pseudobulk negative-binomial
+dispersion `phi_total` into a cell-heterogeneity term (`theta`/n, with
+the cell-level `theta` from
 [`pbSetup()`](https://smorabit.github.io/seny/reference/pbSetup.md)) and
 a between-donor term `phi_donor` (moment estimate
 `max(0, phi_total - theta*mean(1/n))`), and reports the depth/cell/donor

@@ -32,7 +32,9 @@ assessAll(
   power = 0.8,
   fdr = 0.05,
   pi1 = 0.05,
+  alphaFixed = 0.001,
   thresholds = defaultThresholds(),
+  thetaReps = 3,
   BPPARAM = BiocParallel::SerialParam()
 )
 ```
@@ -97,7 +99,7 @@ assessAll(
 
   Primary target absolute log2 fold-change driving the call.
 
-- power, fdr, pi1:
+- power, fdr, pi1, alphaFixed:
 
   Sensitivity settings passed to
   [`estimateSensitivity()`](https://smorabit.github.io/seny/reference/estimateSensitivity.md).

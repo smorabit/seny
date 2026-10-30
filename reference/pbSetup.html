@@ -128,7 +128,11 @@ dropped. Default 10.</p></dd>
 
 <dt id="arg-thetacells-thetadonors-thetareps">thetaCells, thetaDonors, thetaReps<a class="anchor" aria-label="anchor" href="#arg-thetacells-thetadonors-thetareps"></a></dt>
 <dd><p>Subsample size (cells per donor,
-donors) and number of draws for the cell-level <code>theta</code> ensemble.</p></dd>
+donors) and number of draws for the cell-level <code>theta</code> ensemble.
+<code>thetaReps = 0</code> skips the theta fit (by far the slowest step): the
+adequacy call is unchanged, since the sensitivity uses the total
+pseudobulk dispersion, but the depth/cell/donor variance decomposition
+from <code><a href="estimateVariance.html">estimateVariance()</a></code> is then <code>NA</code>.</p></dd>
 
 
 <dt id="arg-bpparam">BPPARAM<a class="anchor" aria-label="anchor" href="#arg-bpparam"></a></dt>

@@ -68,9 +68,9 @@ knitr::kable(as.data.frame(res)[, cols], digits = 2, row.names = FALSE)
 
 | cluster | nA | nB | median_cells | gini_cells | cells_ratio | cells_cond_cor | n_testable | sensitivity_fraction | call |
 |:---|---:|---:|---:|---:|---:|---:|---:|---:|:---|
-| CD4T | 12 | 12 | 90.0 | 0.00 | 1.00 | NA | 400 | 0.98 | Adequate |
-| CD8T | 12 | 12 | 42.5 | 0.32 | 0.21 | -1 | 400 | 0.96 | Caution |
-| NK | 12 | 12 | 25.0 | 0.00 | 1.00 | NA | 400 | 0.00 | Underpowered |
+| CD4T | 12 | 12 | 90.0 | 0.00 | 1.00 | NA | 400 | 1 | Adequate |
+| CD8T | 12 | 12 | 42.5 | 0.32 | 0.21 | -1 | 400 | 1 | Caution |
+| NK | 12 | 12 | 25.0 | 0.00 | 1.00 | NA | 400 | 0 | Underpowered |
 
 Each non-adequate call explains itself:
 
@@ -81,7 +81,7 @@ for (i in seq_len(nrow(d))) {
     cat(d$cluster[i], "->", as.character(d$call[i]), "::", d$reason[i], "\n")
 }
 #> CD4T -> Adequate :: adequate 
-#> CD8T -> Caution :: cell-count imbalance correlated with condition (r -1.00; consider sample weights) 
+#> CD8T -> Caution :: cell-count imbalance correlated with condition (r -1.00, cutoff 0.50 at 24 samples; consider sample weights) 
 #> NK -> Underpowered :: underpowered (0% of genes detectable at log2FC 1)
 ```
 
@@ -166,13 +166,14 @@ in-house atlas), not chosen up front.
 ``` r
 
 str(defaultThresholds())
-#> List of 6
-#>  $ cramerV     : num 0.3
-#>  $ vif         : num 5
-#>  $ sensitivity : num 0.5
-#>  $ minSamples  : num 2
-#>  $ cellsCondCor: num 0.5
-#>  $ minTestable : num 200
+#> List of 7
+#>  $ cramerV       : num 0.3
+#>  $ vif           : num 5
+#>  $ sensitivity   : num 0.5
+#>  $ minSamples    : num 2
+#>  $ cellsCondCor  : num 0.5
+#>  $ cellsCondAlpha: num 0.05
+#>  $ minTestable   : num 200
 ```
 
 This run assessed 3 comparisons. When you scan many comparisons at once,

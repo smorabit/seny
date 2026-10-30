@@ -88,7 +88,12 @@ pbSetup(
 - thetaCells, thetaDonors, thetaReps:
 
   Subsample size (cells per donor, donors) and number of draws for the
-  cell-level `theta` ensemble.
+  cell-level `theta` ensemble. `thetaReps = 0` skips the theta fit (by
+  far the slowest step): the adequacy call is unchanged, since the
+  sensitivity uses the total pseudobulk dispersion, but the
+  depth/cell/donor variance decomposition from
+  [`estimateVariance()`](https://smorabit.github.io/seny/reference/estimateVariance.md)
+  is then `NA`.
 
 - BPPARAM:
 

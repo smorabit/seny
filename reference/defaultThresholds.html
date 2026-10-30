@@ -56,9 +56,13 @@ comparison is flagged Caution), <code>vif</code> (variance inflation factor thre
 <code>sensitivity</code> (sensitivity fraction at or above which a comparison is
 adequately powered), <code>minSamples</code> (fewer samples per group is Invalid),
 <code>cellsCondCor</code> (absolute correlation of log cells per sample with condition
-above which cell-count imbalance is flagged Caution), and <code>minTestable</code>
-(fewer testable genes is Underpowered). The last two gate the layer-2
-metrics and, like the others, are provisional placeholders until E1-E8.</p>
+above which cell-count imbalance is flagged Caution), <code>cellsCondAlpha</code>
+(the correlation must also exceed the critical value at this level for the
+comparison's sample size, so chance correlations in small designs are not
+flagged: the cutoff is <code>max(cellsCondCor, r_crit(n))</code>, about 0.81 at 6
+samples and <code>cellsCondCor</code> from ~16 samples), and <code>minTestable</code> (fewer
+testable genes is Underpowered). The layer-2 values, like the others, are
+provisional placeholders until E1-E8.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

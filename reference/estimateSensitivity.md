@@ -3,12 +3,13 @@
 From the null-model variance fits
 ([`estimateVariance()`](https://smorabit.github.io/seny/reference/estimateVariance.md)),
 computes the analytic standard error of the two-group log2 fold-change
-contrast per gene (`SE^2 = 1/sum_A w + 1/sum_B w`,
-`w = 1/(1/mu + phi_total)`), the minimum detectable effect at the target
-power and FDR, and the power at the primary target effect. Summarises to
-the sensitivity fraction: the share of testable genes detectable at
-`targetLFC`. Uncalibrated in the MVP (`calibrate = FALSE`); the
-empirical calibration from E2/E7 is applied in a later phase.
+contrast per gene (`SE^2 = 1/sum_A w + 1/sum_B w`, `w = 1/(1/mu + phi)`,
+phi the dispersion with the condition in the design), the minimum
+detectable effect at the target power and FDR, and the power at the
+primary target effect. Summarises to the sensitivity fraction: the share
+of testable genes detectable at `targetLFC`. Uncalibrated in the MVP
+(`calibrate = FALSE`); the empirical calibration from E2/E7 is applied
+in a later phase.
 
 ## Usage
 
@@ -19,6 +20,7 @@ estimateSensitivity(
   power = 0.8,
   fdr = 0.05,
   pi1 = 0.05,
+  alphaFixed = 0.001,
   calibrate = FALSE
 )
 ```
@@ -47,6 +49,12 @@ estimateSensitivity(
   Assumed fraction of true positives (maps FDR to a per-gene threshold,
   Jung 2005). Default 0.05.
 
+- alphaFixed:
+
+  Fixed per-gene significance level for the second MDE. Default 0.001.
+  The call uses the larger MDE; `alphaFixed = 1` recovers the FDR-based
+  MDE alone.
+
 - calibrate:
 
   Reserved; must be `FALSE` in the MVP.
@@ -54,4 +62,15 @@ estimateSensitivity(
 ## Value
 
 A `data.frame`, one row per comparison, with `target_lfc`,
-`sensitivity_fraction`, `median_mde` and `median_power`.
+`sensitivity_fraction`, `median_mde` (the larger of the two per gene),
+`median_mde_fdr`, `median_mde_fixed` and `median_power`.
+
+## Details
+
+Two MDEs are computed per gene: an FDR-based one (the FDR mapped to a
+per-gene threshold through the assumed fraction of true positives `pi1`)
+and one at a fixed per-gene `alphaFixed`. The call uses the larger of
+the two (the stricter threshold), because the FDR mapping is optimistic
+when few genes are truly DE: then BH rejects far fewer tests than `pi1`
+implies (E4, male vs female in blood: realised BH threshold ~1e-4 vs the
+mapped ~2e-3).
