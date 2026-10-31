@@ -71,7 +71,7 @@ knitr::kable(as.data.frame(res)[, cols], digits = 2, row.names = FALSE)
 |:---|---:|---:|---:|---:|---:|---:|---:|---:|:---|
 | CD4T | 12 | 12 | 90.0 | 0.00 | 1.00 | NA | 400 | 1.00 | Adequate |
 | CD8T | 12 | 12 | 42.5 | 0.32 | 0.21 | -1 | 400 | 1.00 | Caution |
-| NK | 12 | 12 | 25.0 | 0.00 | 1.00 | NA | 400 | 0.78 | Adequate |
+| NK | 12 | 12 | 25.0 | 0.00 | 1.00 | NA | 400 | 0.77 | Adequate |
 
 Each non-adequate call explains itself:
 
