@@ -4,10 +4,11 @@ Merges the layer metrics into one tidy table, one row per comparison,
 and assigns each comparison a call: **Invalid** (the contrast is not
 estimable, or too few samples per group), **Caution** (estimable but the
 condition is confounded with a covariate, or cell-count imbalance tracks
-the condition), **Underpowered** (valid but the sensitivity fraction is
-below target, or too few testable genes), or **Adequate**. Severity
-order is Invalid \> Caution \> Underpowered \> Adequate; the `reason`
-column lists every flag so the single call never hides a second problem.
+the condition), **Underpowered** (valid but the expected recall at the
+target effect is below `thresholds$sensitivity`, or too few testable
+genes), or **Adequate**. Severity order is Invalid \> Caution \>
+Underpowered \> Adequate; the `reason` column lists every flag so the
+single call never hides a second problem.
 
 ## Usage
 

@@ -3,15 +3,15 @@
 assigns each comparison a call: Invalid (the contrast is not estimable, or
 too few samples per group), Caution (estimable but the condition is
 confounded with a covariate, or cell-count imbalance tracks the condition),
-Underpowered (valid but the sensitivity fraction is below target, or too
-few testable genes), or Adequate. Severity order is
+Underpowered (valid but the expected recall at the target effect is below
+thresholds$sensitivity, or too few testable genes), or Adequate. Severity order is
 Invalid &amp;gt; Caution &amp;gt; Underpowered &amp;gt; Adequate; the reason column lists every
 flag so the single call never hides a second problem."><meta property="og:description" content="Merges the layer metrics into one tidy table, one row per comparison, and
 assigns each comparison a call: Invalid (the contrast is not estimable, or
 too few samples per group), Caution (estimable but the condition is
 confounded with a covariate, or cell-count imbalance tracks the condition),
-Underpowered (valid but the sensitivity fraction is below target, or too
-few testable genes), or Adequate. Severity order is
+Underpowered (valid but the expected recall at the target effect is below
+thresholds$sensitivity, or too few testable genes), or Adequate. Severity order is
 Invalid &amp;gt; Caution &amp;gt; Underpowered &amp;gt; Adequate; the reason column lists every
 flag so the single call never hides a second problem."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -53,8 +53,8 @@ flag so the single call never hides a second problem."></head><body>
 assigns each comparison a call: <strong>Invalid</strong> (the contrast is not estimable, or
 too few samples per group), <strong>Caution</strong> (estimable but the condition is
 confounded with a covariate, or cell-count imbalance tracks the condition),
-<strong>Underpowered</strong> (valid but the sensitivity fraction is below target, or too
-few testable genes), or <strong>Adequate</strong>. Severity order is
+<strong>Underpowered</strong> (valid but the expected recall at the target effect is below
+<code>thresholds$sensitivity</code>, or too few testable genes), or <strong>Adequate</strong>. Severity order is
 Invalid &gt; Caution &gt; Underpowered &gt; Adequate; the <code>reason</code> column lists every
 flag so the single call never hides a second problem.</p>
     </div>

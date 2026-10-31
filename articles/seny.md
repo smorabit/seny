@@ -56,21 +56,22 @@ res <- assessAll(sce, sample = "donor", group = "condition",
 The comparison table carries the layer-2 cell-quality metrics alongside
 the call. `cells_cond_cor` is the correlation of log cells-per-sample
 with the condition; `cells_ratio` is the smaller group median over the
-larger; `sensitivity_fraction` is the share of testable genes detectable
-at the target effect.
+larger; `expected_recall` is the share of true effects of the target
+size the test is expected to detect (mean per-gene power at the target),
+and drives the Adequate / Underpowered call.
 
 ``` r
 
 cols <- c("cluster", "nA", "nB", "median_cells", "gini_cells", "cells_ratio",
-          "cells_cond_cor", "n_testable", "sensitivity_fraction", "call")
+          "cells_cond_cor", "n_testable", "expected_recall", "call")
 knitr::kable(as.data.frame(res)[, cols], digits = 2, row.names = FALSE)
 ```
 
-| cluster | nA | nB | median_cells | gini_cells | cells_ratio | cells_cond_cor | n_testable | sensitivity_fraction | call |
+| cluster | nA | nB | median_cells | gini_cells | cells_ratio | cells_cond_cor | n_testable | expected_recall | call |
 |:---|---:|---:|---:|---:|---:|---:|---:|---:|:---|
-| CD4T | 12 | 12 | 90.0 | 0.00 | 1.00 | NA | 400 | 1 | Adequate |
-| CD8T | 12 | 12 | 42.5 | 0.32 | 0.21 | -1 | 400 | 1 | Caution |
-| NK | 12 | 12 | 25.0 | 0.00 | 1.00 | NA | 400 | 0 | Underpowered |
+| CD4T | 12 | 12 | 90.0 | 0.00 | 1.00 | NA | 400 | 1.00 | Adequate |
+| CD8T | 12 | 12 | 42.5 | 0.32 | 0.21 | -1 | 400 | 1.00 | Caution |
+| NK | 12 | 12 | 25.0 | 0.00 | 1.00 | NA | 400 | 0.78 | Adequate |
 
 Each non-adequate call explains itself:
 
@@ -82,7 +83,7 @@ for (i in seq_len(nrow(d))) {
 }
 #> CD4T -> Adequate :: adequate 
 #> CD8T -> Caution :: cell-count imbalance correlated with condition (r -1.00, cutoff 0.50 at 24 samples; consider sample weights) 
-#> NK -> Underpowered :: underpowered (0% of genes detectable at log2FC 1)
+#> NK -> Adequate :: adequate
 ```
 
 Here CD4 T is clean (**Adequate**); CD8 T has far fewer cells in

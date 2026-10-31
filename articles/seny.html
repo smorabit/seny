@@ -137,24 +137,26 @@ comparison.</p>
 <p>The comparison table carries the layer-2 cell-quality metrics
 alongside the call. <code>cells_cond_cor</code> is the correlation of
 log cells-per-sample with the condition; <code>cells_ratio</code> is the
-smaller group median over the larger; <code>sensitivity_fraction</code>
-is the share of testable genes detectable at the target effect.</p>
+smaller group median over the larger; <code>expected_recall</code> is
+the share of true effects of the target size the test is expected to
+detect (mean per-gene power at the target), and drives the Adequate /
+Underpowered call.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cluster"</span>, <span class="st">"nA"</span>, <span class="st">"nB"</span>, <span class="st">"median_cells"</span>, <span class="st">"gini_cells"</span>, <span class="st">"cells_ratio"</span>,</span>
-<span>          <span class="st">"cells_cond_cor"</span>, <span class="st">"n_testable"</span>, <span class="st">"sensitivity_fraction"</span>, <span class="st">"call"</span><span class="op">)</span></span>
+<span>          <span class="st">"cells_cond_cor"</span>, <span class="st">"n_testable"</span>, <span class="st">"expected_recall"</span>, <span class="st">"call"</span><span class="op">)</span></span>
 <span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span><span class="op">[</span>, <span class="va">cols</span><span class="op">]</span>, digits <span class="op">=</span> <span class="fl">2</span>, row.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<table style="width:100%;" class="table">
+<table class="table">
 <colgroup>
 <col width="7%">
 <col width="2%">
 <col width="2%">
+<col width="12%">
+<col width="10%">
 <col width="11%">
+<col width="14%">
 <col width="10%">
-<col width="10%">
-<col width="13%">
-<col width="10%">
-<col width="19%">
-<col width="11%">
+<col width="15%">
+<col width="8%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">cluster</th>
@@ -165,7 +167,7 @@ is the share of testable genes detectable at the target effect.</p>
 <th align="right">cells_ratio</th>
 <th align="right">cells_cond_cor</th>
 <th align="right">n_testable</th>
-<th align="right">sensitivity_fraction</th>
+<th align="right">expected_recall</th>
 <th align="left">call</th>
 </tr></thead>
 <tbody>
@@ -178,7 +180,7 @@ is the share of testable genes detectable at the target effect.</p>
 <td align="right">1.00</td>
 <td align="right">NA</td>
 <td align="right">400</td>
-<td align="right">1</td>
+<td align="right">1.00</td>
 <td align="left">Adequate</td>
 </tr>
 <tr class="even">
@@ -190,7 +192,7 @@ is the share of testable genes detectable at the target effect.</p>
 <td align="right">0.21</td>
 <td align="right">-1</td>
 <td align="right">400</td>
-<td align="right">1</td>
+<td align="right">1.00</td>
 <td align="left">Caution</td>
 </tr>
 <tr class="odd">
@@ -202,8 +204,8 @@ is the share of testable genes detectable at the target effect.</p>
 <td align="right">1.00</td>
 <td align="right">NA</td>
 <td align="right">400</td>
-<td align="right">0</td>
-<td align="left">Underpowered</td>
+<td align="right">0.78</td>
+<td align="left">Adequate</td>
 </tr>
 </tbody>
 </table>
@@ -215,7 +217,7 @@ is the share of testable genes detectable at the target effect.</p>
 <span><span class="op">}</span></span>
 <span><span class="co">#&gt; CD4T -&gt; Adequate :: adequate </span></span>
 <span><span class="co">#&gt; CD8T -&gt; Caution :: cell-count imbalance correlated with condition (r -1.00, cutoff 0.50 at 24 samples; consider sample weights) </span></span>
-<span><span class="co">#&gt; NK -&gt; Underpowered :: underpowered (0% of genes detectable at log2FC 1)</span></span></code></pre></div>
+<span><span class="co">#&gt; NK -&gt; Adequate :: adequate</span></span></code></pre></div>
 <p>Here CD4 T is clean (<strong>Adequate</strong>); CD8 T has far fewer
 cells in condition B, so its cell-count imbalance tracks the condition
 and breaks the equal-variance assumption (<strong>Caution</strong> —

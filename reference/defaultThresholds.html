@@ -53,8 +53,9 @@ placeholders, documented so a user can override them.</p>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A named list: <code>cramerV</code> (condition-covariate association above which a
 comparison is flagged Caution), <code>vif</code> (variance inflation factor threshold),
-<code>sensitivity</code> (sensitivity fraction at or above which a comparison is
-adequately powered), <code>minSamples</code> (fewer samples per group is Invalid),
+<code>sensitivity</code> (expected recall at the target effect at or above which a
+comparison is adequately powered; 0.5 matches replication failure defined as
+recall below 0.5), <code>minSamples</code> (fewer samples per group is Invalid),
 <code>cellsCondCor</code> (absolute correlation of log cells per sample with condition
 above which cell-count imbalance is flagged Caution), <code>cellsCondAlpha</code>
 (the correlation must also exceed the critical value at this level for the

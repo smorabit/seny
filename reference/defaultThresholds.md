@@ -16,9 +16,10 @@ defaultThresholds()
 
 A named list: `cramerV` (condition-covariate association above which a
 comparison is flagged Caution), `vif` (variance inflation factor
-threshold), `sensitivity` (sensitivity fraction at or above which a
-comparison is adequately powered), `minSamples` (fewer samples per group
-is Invalid), `cellsCondCor` (absolute correlation of log cells per
+threshold), `sensitivity` (expected recall at the target effect at or
+above which a comparison is adequately powered; 0.5 matches replication
+failure defined as recall below 0.5), `minSamples` (fewer samples per
+group is Invalid), `cellsCondCor` (absolute correlation of log cells per
 sample with condition above which cell-count imbalance is flagged
 Caution), `cellsCondAlpha` (the correlation must also exceed the
 critical value at this level for the comparison's sample size, so chance

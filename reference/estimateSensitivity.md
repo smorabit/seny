@@ -6,10 +6,17 @@ computes the analytic standard error of the two-group log2 fold-change
 contrast per gene (`SE^2 = 1/sum_A w + 1/sum_B w`, `w = 1/(1/mu + phi)`,
 phi the dispersion with the condition in the design), the minimum
 detectable effect at the target power and FDR, and the power at the
-primary target effect. Summarises to the sensitivity fraction: the share
-of testable genes detectable at `targetLFC`. Uncalibrated in the MVP
-(`calibrate = FALSE`); the empirical calibration from E2/E7 is applied
-in a later phase.
+primary target effect. Summarises to the comparison's **expected
+recall** at `targetLFC`: the mean per-gene power at the target over the
+testable genes, i.e. the share of true effects of that size the test is
+expected to detect if they are spread like the testable genes.
+[`callComparisons()`](https://smorabit.github.io/seny/reference/callComparisons.md)
+calls a comparison Adequate when its expected recall reaches
+`defaultThresholds()$sensitivity` (0.5). On OneK1K with known injected
+effects it tracked the observed recall per comparison (slope 1.0),
+whereas the sensitivity fraction (the share of genes whose MDE clears
+the target at the target power, still reported) under-predicts it (E4c).
+Uncalibrated in the MVP (`calibrate = FALSE`).
 
 ## Usage
 
@@ -65,9 +72,9 @@ estimateSensitivity(
 ## Value
 
 A `data.frame`, one row per comparison, with `target_lfc`, the `pi1` and
-per-gene `alpha` used, `sensitivity_fraction`, `median_mde`,
-`median_mde_fdr`, `median_mde_fixed` (`NA` without `alphaFixed`) and
-`median_power`.
+per-gene `alpha` used, `expected_recall` (the summary behind the call),
+`sensitivity_fraction`, `median_mde`, `median_mde_fdr`,
+`median_mde_fixed` (`NA` without `alphaFixed`) and `median_power`.
 
 ## Details
 

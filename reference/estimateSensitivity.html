@@ -4,16 +4,30 @@ analytic standard error of the two-group log2 fold-change contrast per gene
 (SE^2 = 1/sum_A w + 1/sum_B w, w = 1/(1/mu + phi), phi the dispersion with the
 condition in the design), the minimum
 detectable effect at the target power and FDR, and the power at the primary
-target effect. Summarises to the sensitivity fraction: the share of testable
-genes detectable at targetLFC. Uncalibrated in the MVP (calibrate = FALSE);
-the empirical calibration from E2/E7 is applied in a later phase."><meta property="og:description" content="From the variance fits (estimateVariance()), computes the
+target effect. Summarises to the comparison's expected recall at
+targetLFC: the mean per-gene power at the target over the testable genes,
+i.e. the share of true effects of that size the test is expected to detect if
+they are spread like the testable genes. callComparisons() calls a
+comparison Adequate when its expected recall reaches
+defaultThresholds()$sensitivity (0.5). On OneK1K with known injected effects
+it tracked the observed recall per comparison (slope 1.0), whereas the
+sensitivity fraction (the share of genes whose MDE clears the target at the
+target power, still reported) under-predicts it (E4c). Uncalibrated in the
+MVP (calibrate = FALSE)."><meta property="og:description" content="From the variance fits (estimateVariance()), computes the
 analytic standard error of the two-group log2 fold-change contrast per gene
 (SE^2 = 1/sum_A w + 1/sum_B w, w = 1/(1/mu + phi), phi the dispersion with the
 condition in the design), the minimum
 detectable effect at the target power and FDR, and the power at the primary
-target effect. Summarises to the sensitivity fraction: the share of testable
-genes detectable at targetLFC. Uncalibrated in the MVP (calibrate = FALSE);
-the empirical calibration from E2/E7 is applied in a later phase."></head><body>
+target effect. Summarises to the comparison's expected recall at
+targetLFC: the mean per-gene power at the target over the testable genes,
+i.e. the share of true effects of that size the test is expected to detect if
+they are spread like the testable genes. callComparisons() calls a
+comparison Adequate when its expected recall reaches
+defaultThresholds()$sensitivity (0.5). On OneK1K with known injected effects
+it tracked the observed recall per comparison (slope 1.0), whereas the
+sensitivity fraction (the share of genes whose MDE clears the target at the
+target power, still reported) under-predicts it (E4c). Uncalibrated in the
+MVP (calibrate = FALSE)."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -54,9 +68,16 @@ analytic standard error of the two-group log2 fold-change contrast per gene
 (<code>SE^2 = 1/sum_A w + 1/sum_B w</code>, <code>w = 1/(1/mu + phi)</code>, phi the dispersion with the
 condition in the design), the minimum
 detectable effect at the target power and FDR, and the power at the primary
-target effect. Summarises to the sensitivity fraction: the share of testable
-genes detectable at <code>targetLFC</code>. Uncalibrated in the MVP (<code>calibrate = FALSE</code>);
-the empirical calibration from E2/E7 is applied in a later phase.</p>
+target effect. Summarises to the comparison's <strong>expected recall</strong> at
+<code>targetLFC</code>: the mean per-gene power at the target over the testable genes,
+i.e. the share of true effects of that size the test is expected to detect if
+they are spread like the testable genes. <code><a href="callComparisons.html">callComparisons()</a></code> calls a
+comparison Adequate when its expected recall reaches
+<code>defaultThresholds()$sensitivity</code> (0.5). On OneK1K with known injected effects
+it tracked the observed recall per comparison (slope 1.0), whereas the
+sensitivity fraction (the share of genes whose MDE clears the target at the
+target power, still reported) under-predicts it (E4c). Uncalibrated in the
+MVP (<code>calibrate = FALSE</code>).</p>
     </div>
 
     <div class="section level2">
@@ -114,7 +135,8 @@ of the two (the larger MDE).</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A <code>data.frame</code>, one row per comparison, with <code>target_lfc</code>, the <code>pi1</code>
-and per-gene <code>alpha</code> used, <code>sensitivity_fraction</code>, <code>median_mde</code>,
+and per-gene <code>alpha</code> used, <code>expected_recall</code> (the summary behind the call),
+<code>sensitivity_fraction</code>, <code>median_mde</code>,
 <code>median_mde_fdr</code>, <code>median_mde_fixed</code> (<code>NA</code> without <code>alphaFixed</code>) and
 <code>median_power</code>.</p>
     </div>
