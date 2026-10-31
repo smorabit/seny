@@ -2,9 +2,12 @@
 #'
 #' For every comparison, fits the chosen DE method and returns the per-gene
 #' standard error of the two-group log2 fold-change contrast (used by
-#' [estimateSensitivity()]). The SE uses the dispersion estimated with the
+#' [estimateSensitivity()]). The SE uses the variance estimated with the
 #' condition in the design, as the user's test sees it, evaluated at the
-#' condition-blind (null-model) fitted means. Power is always computed at the
+#' condition-blind (null-model) fitted means. For `edgeR` it mirrors the
+#' quasi-likelihood test: the QL fit's NB dispersion with each gene's posterior
+#' QL dispersion (`s2.post`) on top, as the `voom` SE carries limma's `s2.post`.
+#' Power is always computed at the
 #' target effect, never the observed one. A null-model dispersion would absorb
 #' real effects as noise and understate power exactly where DE is strong. The
 #' variance decomposition stays condition-blind. For the count methods (`edgeR`, `deseq2`) it also
@@ -144,25 +147,29 @@ fit_edger <- function(d) {
     g <- rownames(y)
     phi <- y_null$tagwise.dispersion
     mu <- qfit$fitted.values
-    # full fit (condition in the design): the dispersion and QL prior df behind the
+    # full fit (condition in the design): the variance and QL prior df behind the
     # SE, as the user's test sees them. under the null fit a large true effect is
     # absorbed as noise and inflates the SE of exactly the strongly DE genes
     # (E4: ceiling genes predicted 0.22 vs detected 0.77 at 3 donors per group).
-    # power stays evaluated at the target effect, never the observed one.
+    # the SE mirrors the QL test, which uses one NB dispersion and puts each gene's
+    # own variance in the posterior QL dispersion s2.post; tagwise dispersion alone
+    # left mid-range power under-confident (E4b/E4 mid-range 0.60 vs 0.66). power
+    # stays evaluated at the target effect, never the observed one.
     full <- disp_full(y, d)
-    phi_se <- if (is.null(full)) phi else full$phi
+    phi_se <- if (is.null(full)) phi else full$ql_disp
+    s2_post <- if (is.null(full)) rep(1, length(g)) else full$s2_post
     df_prior <- if (is.null(full)) stats::median(qfit$df.prior) else full$df_prior
     df <- (length(d$group) - 2) + df_prior
-    list(genes = g, se_log2 = nb_se(mu, phi_se, d$group), df = rep(df, length(g)),
-         pvalue = full$pvalue,
+    list(genes = g, se_log2 = nb_se(mu, phi_se, d$group) * sqrt(s2_post), df = rep(df, length(g)),
+         pvalue = full$pvalue, s2_post = s2_post,
          group = d$group, n_i = d$nCells, nb = TRUE, phi_total = phi, phi_se = phi_se,
          theta = align_theta(d$theta, g), mean_count = rowMeans(d$counts[g, , drop = FALSE]),
          acpm = edgeR::aveLogCPM(y))
 }
 
-#' Tagwise dispersion, QL prior df and the condition's QL-test p-values with the
-#' condition in the design; NULL when the full design is not estimable (the
-#' caller falls back to the null fit)
+#' The QL fit's NB dispersion, posterior QL dispersions, QL prior df and the
+#' condition's QL-test p-values with the condition in the design; NULL when the
+#' full design is not estimable (the caller falls back to the null fit)
 #' @noRd
 disp_full <- function(y, d) {
     bd <- build_design(d$group, d$covariates)
@@ -171,7 +178,8 @@ disp_full <- function(y, d) {
         yf <- edgeR::estimateDisp(y, bd$design, robust = TRUE)
         qf <- edgeR::glmQLFit(yf, bd$design, robust = TRUE)
         qt <- edgeR::glmQLFTest(qf, coef = bd$coef)
-        list(phi = yf$tagwise.dispersion, df_prior = stats::median(qf$df.prior),
+        list(ql_disp = qf$dispersion, s2_post = qf$s2.post,
+             df_prior = stats::median(qf$df.prior),
              pvalue = stats::setNames(qt$table$PValue, rownames(qt)))
     }, error = function(e) NULL)
 }

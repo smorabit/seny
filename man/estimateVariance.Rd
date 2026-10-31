@@ -22,9 +22,12 @@ method's own p-values for the condition, \code{pvalue}, behind the
 \description{
 For every comparison, fits the chosen DE method and returns the per-gene
 standard error of the two-group log2 fold-change contrast (used by
-\code{\link[=estimateSensitivity]{estimateSensitivity()}}). The SE uses the dispersion estimated with the
+\code{\link[=estimateSensitivity]{estimateSensitivity()}}). The SE uses the variance estimated with the
 condition in the design, as the user's test sees it, evaluated at the
-condition-blind (null-model) fitted means. Power is always computed at the
+condition-blind (null-model) fitted means. For \code{edgeR} it mirrors the
+quasi-likelihood test: the QL fit's NB dispersion with each gene's posterior
+QL dispersion (\code{s2.post}) on top, as the \code{voom} SE carries limma's \code{s2.post}.
+Power is always computed at the
 target effect, never the observed one. A null-model dispersion would absorb
 real effects as noise and understate power exactly where DE is strong. The
 variance decomposition stays condition-blind. For the count methods (\code{edgeR}, \code{deseq2}) it also

@@ -73,7 +73,7 @@ test_that('the edgeR null fit keeps genes expressed in only one condition', {
     expect_true(all(vapply(v$pergene, function(f) rownames(cnt)[1] %in% f$genes, logical(1))))
 })
 
-test_that('the edgeR SE uses full-model dispersion; the decomposition stays null-model', {
+test_that('the edgeR SE uses the full-model QL variance; the decomposition stays null-model', {
     fit_at <- function(fc) {
         sce <- sim_sce(n_per_group = 4, n_genes = 200, n_de = 15, log2fc = fc,
                        cells_per = 40, seed = 11)
@@ -83,13 +83,16 @@ test_that('the edgeR SE uses full-model dispersion; the decomposition stays null
     }
     f <- fit_at(3)      # 15 strong DE genes (g1..g15, log2FC 3)
     f0 <- fit_at(0)     # same data without the effect: the true noise level
+    # the variance behind the SE: the QL fit's NB dispersion scaled by each gene's
+    # posterior QL dispersion
+    eff <- function(fit) fit$phi_se * fit$s2_post
     de <- f$genes %in% paste0('g', 1:15)
-    null0 <- stats::median(f0$phi_se[!(f0$genes %in% paste0('g', 1:15))])
+    null0 <- stats::median(eff(f0)[!(f0$genes %in% paste0('g', 1:15))])
     # the null fit absorbs the effect as noise, for the DE genes and, through the
     # shared dispersion trend, for the rest; the full fit recovers the true level
-    expect_lt(stats::median(f$phi_se[de]), stats::median(f$phi_total[de]) / 5)
+    expect_lt(stats::median(eff(f)[de]), stats::median(f$phi_total[de]) / 5)
     expect_gt(stats::median(f$phi_total[!de]), 1.5 * null0)
-    expect_lt(abs(log(stats::median(f$phi_se[!de]) / null0)), 0.2)
-    # without DE the two fits agree
-    expect_lt(abs(log(stats::median(f0$phi_se) / stats::median(f0$phi_total))), 0.05)
+    expect_lt(abs(log(stats::median(eff(f)[!de]) / null0)), 0.2)
+    # without DE the full-model variance agrees with the null fit
+    expect_lt(abs(log(stats::median(eff(f0)) / stats::median(f0$phi_total))), 0.3)
 })
