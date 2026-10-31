@@ -57,12 +57,13 @@ res <- assessAll(sce, sample = "donor", group = "condition",
 The comparison table carries the layer-2 cell-quality metrics alongside the
 call. `cells_cond_cor` is the correlation of log cells-per-sample with the
 condition; `cells_ratio` is the smaller group median over the larger;
-`sensitivity_fraction` is the share of testable genes detectable at the target
-effect.
+`expected_recall` is the share of true effects of the target size the test is
+expected to detect (mean per-gene power at the target), and drives the
+Adequate / Underpowered call.
 
 ```{r table}
 cols <- c("cluster", "nA", "nB", "median_cells", "gini_cells", "cells_ratio",
-          "cells_cond_cor", "n_testable", "sensitivity_fraction", "call")
+          "cells_cond_cor", "n_testable", "expected_recall", "call")
 knitr::kable(as.data.frame(res)[, cols], digits = 2, row.names = FALSE)
 ```
 

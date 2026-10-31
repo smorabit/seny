@@ -5,9 +5,16 @@
 #' (`SE^2 = 1/sum_A w + 1/sum_B w`, `w = 1/(1/mu + phi)`, phi the dispersion with the
 #' condition in the design), the minimum
 #' detectable effect at the target power and FDR, and the power at the primary
-#' target effect. Summarises to the sensitivity fraction: the share of testable
-#' genes detectable at `targetLFC`. Uncalibrated in the MVP (`calibrate = FALSE`);
-#' the empirical calibration from E2/E7 is applied in a later phase.
+#' target effect. Summarises to the comparison's **expected recall** at
+#' `targetLFC`: the mean per-gene power at the target over the testable genes,
+#' i.e. the share of true effects of that size the test is expected to detect if
+#' they are spread like the testable genes. [callComparisons()] calls a
+#' comparison Adequate when its expected recall reaches
+#' `defaultThresholds()$sensitivity` (0.5). On OneK1K with known injected effects
+#' it tracked the observed recall per comparison (slope 1.0), whereas the
+#' sensitivity fraction (the share of genes whose MDE clears the target at the
+#' target power, still reported) under-predicts it (E4c). Uncalibrated in the
+#' MVP (`calibrate = FALSE`).
 #'
 #' The FDR target is mapped to a per-gene significance level through the
 #' fraction of true positives `pi1` (Jung 2005), capped at `fdr` (BH never tests
@@ -36,7 +43,8 @@
 #'   of the two (the larger MDE).
 #' @param calibrate Reserved; must be `FALSE` in the MVP.
 #' @return A `data.frame`, one row per comparison, with `target_lfc`, the `pi1`
-#'   and per-gene `alpha` used, `sensitivity_fraction`, `median_mde`,
+#'   and per-gene `alpha` used, `expected_recall` (the summary behind the call),
+#'   `sensitivity_fraction`, `median_mde`,
 #'   `median_mde_fdr`, `median_mde_fixed` (`NA` without `alphaFixed`) and
 #'   `median_power`.
 #' @export
@@ -52,6 +60,7 @@ estimateSensitivity <- function(variance, targetLFC = 1, power = 0.8, fdr = 0.05
         ap <- analytic_power(fit, targetLFC, power, fdr, cur_pi1, alphaFixed)
         data.frame(comparison = key, target_lfc = targetLFC, pi1 = cur_pi1,
                    alpha = sensitivity_alpha(power, fdr, cur_pi1, alphaFixed)[['call']],
+                   expected_recall = mean(ap$power),
                    sensitivity_fraction = mean(ap$mde <= targetLFC),
                    median_mde = stats::median(ap$mde),
                    median_mde_fdr = stats::median(ap$mde_fdr),
@@ -62,7 +71,8 @@ estimateSensitivity <- function(variance, targetLFC = 1, power = 0.8, fdr = 0.05
     seen <- vapply(rows, function(r) r$comparison, character(1))
     missing <- setdiff(variance$summary$comparison, seen)
     for (key in missing) rows[[length(rows) + 1]] <- data.frame(comparison = key,
-        target_lfc = targetLFC, pi1 = NA_real_, alpha = NA_real_, sensitivity_fraction = NA_real_,
+        target_lfc = targetLFC, pi1 = NA_real_, alpha = NA_real_, expected_recall = NA_real_,
+        sensitivity_fraction = NA_real_,
         median_mde = NA_real_, median_mde_fdr = NA_real_, median_mde_fixed = NA_real_,
         median_power = NA_real_, stringsAsFactors = FALSE)
     do.call(rbind, rows)

@@ -4,8 +4,8 @@
 #' assigns each comparison a call: **Invalid** (the contrast is not estimable, or
 #' too few samples per group), **Caution** (estimable but the condition is
 #' confounded with a covariate, or cell-count imbalance tracks the condition),
-#' **Underpowered** (valid but the sensitivity fraction is below target, or too
-#' few testable genes), or **Adequate**. Severity order is
+#' **Underpowered** (valid but the expected recall at the target effect is below
+#' `thresholds$sensitivity`, or too few testable genes), or **Adequate**. Severity order is
 #' Invalid > Caution > Underpowered > Adequate; the `reason` column lists every
 #' flag so the single call never hides a second problem.
 #'
@@ -32,7 +32,7 @@ callComparisons <- function(design, pseudobulk, variance, sensitivity,
         cells_cut <- cells_cond_cutoff(r$nA + r$nB, th$cellsCondCor, th$cellsCondAlpha)
         imbalanced <- !is.na(r$cells_cond_cor) && abs(r$cells_cond_cor) >= cells_cut
         few_testable <- !is.na(r$n_testable) && r$n_testable < th$minTestable
-        underpowered <- !is.na(r$sensitivity_fraction) && r$sensitivity_fraction < th$sensitivity
+        underpowered <- !is.na(r$expected_recall) && r$expected_recall < th$sensitivity
         too_few <- is.na(r$estimable) || !r$estimable ||
                    min(r$nA, r$nB) < th$minSamples
 
@@ -41,8 +41,8 @@ callComparisons <- function(design, pseudobulk, variance, sensitivity,
         if (imbalanced) flags <- c(flags, sprintf('cell-count imbalance correlated with condition (r %.2f, cutoff %.2f at %d samples; consider sample weights)',
                                                   r$cells_cond_cor, cells_cut, r$nA + r$nB))
         if (few_testable) flags <- c(flags, sprintf('too few testable genes (%d)', r$n_testable))
-        if (underpowered) flags <- c(flags, sprintf('underpowered (%.0f%% of genes detectable at log2FC %.2g)',
-                                                    100 * r$sensitivity_fraction, r$target_lfc))
+        if (underpowered) flags <- c(flags, sprintf('underpowered (expected recall %.0f%% at log2FC %.2g)',
+                                                    100 * r$expected_recall, r$target_lfc))
         if (too_few) flags <- c(flags, if (isTRUE(r$estimable)) 'too few samples per group'
                                        else 'design not estimable (rank-deficient or nested)')
 

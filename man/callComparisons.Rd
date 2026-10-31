@@ -28,8 +28,8 @@ Merges the layer metrics into one tidy table, one row per comparison, and
 assigns each comparison a call: \strong{Invalid} (the contrast is not estimable, or
 too few samples per group), \strong{Caution} (estimable but the condition is
 confounded with a covariate, or cell-count imbalance tracks the condition),
-\strong{Underpowered} (valid but the sensitivity fraction is below target, or too
-few testable genes), or \strong{Adequate}. Severity order is
+\strong{Underpowered} (valid but the expected recall at the target effect is below
+\code{thresholds$sensitivity}, or too few testable genes), or \strong{Adequate}. Severity order is
 Invalid > Caution > Underpowered > Adequate; the \code{reason} column lists every
 flag so the single call never hides a second problem.
 }

@@ -38,7 +38,8 @@ of the two (the larger MDE).}
 }
 \value{
 A \code{data.frame}, one row per comparison, with \code{target_lfc}, the \code{pi1}
-and per-gene \code{alpha} used, \code{sensitivity_fraction}, \code{median_mde},
+and per-gene \code{alpha} used, \code{expected_recall} (the summary behind the call),
+\code{sensitivity_fraction}, \code{median_mde},
 \code{median_mde_fdr}, \code{median_mde_fixed} (\code{NA} without \code{alphaFixed}) and
 \code{median_power}.
 }
@@ -48,9 +49,16 @@ analytic standard error of the two-group log2 fold-change contrast per gene
 (\verb{SE^2 = 1/sum_A w + 1/sum_B w}, \code{w = 1/(1/mu + phi)}, phi the dispersion with the
 condition in the design), the minimum
 detectable effect at the target power and FDR, and the power at the primary
-target effect. Summarises to the sensitivity fraction: the share of testable
-genes detectable at \code{targetLFC}. Uncalibrated in the MVP (\code{calibrate = FALSE});
-the empirical calibration from E2/E7 is applied in a later phase.
+target effect. Summarises to the comparison's \strong{expected recall} at
+\code{targetLFC}: the mean per-gene power at the target over the testable genes,
+i.e. the share of true effects of that size the test is expected to detect if
+they are spread like the testable genes. \code{\link[=callComparisons]{callComparisons()}} calls a
+comparison Adequate when its expected recall reaches
+\code{defaultThresholds()$sensitivity} (0.5). On OneK1K with known injected effects
+it tracked the observed recall per comparison (slope 1.0), whereas the
+sensitivity fraction (the share of genes whose MDE clears the target at the
+target power, still reported) under-predicts it (E4c). Uncalibrated in the
+MVP (\code{calibrate = FALSE}).
 }
 \details{
 The FDR target is mapped to a per-gene significance level through the

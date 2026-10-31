@@ -47,7 +47,7 @@ test_that('too few testable genes is Underpowered', {
     pseudobulk <- data.frame(comparison = cmp, cells_cond_cor = 0, n_testable = 50,
                              stringsAsFactors = FALSE)
     variance <- data.frame(comparison = cmp, stringsAsFactors = FALSE)
-    sensitivity <- data.frame(comparison = cmp, sensitivity_fraction = 0.9,
+    sensitivity <- data.frame(comparison = cmp, expected_recall = 0.9, sensitivity_fraction = 0.9,
                               target_lfc = 1, stringsAsFactors = FALSE)
     out <- callComparisons(design, pseudobulk, variance, sensitivity)
     expect_equal(as.character(out$call), 'Underpowered')
@@ -101,7 +101,7 @@ test_that('the cell-imbalance cutoff scales with sample size', {
         pseudobulk <- data.frame(comparison = cmp, cells_cond_cor = r, n_testable = 500,
                                  stringsAsFactors = FALSE)
         variance <- data.frame(comparison = cmp, stringsAsFactors = FALSE)
-        sensitivity <- data.frame(comparison = cmp, sensitivity_fraction = 0.9,
+        sensitivity <- data.frame(comparison = cmp, expected_recall = 0.9, sensitivity_fraction = 0.9,
                                   target_lfc = 1, stringsAsFactors = FALSE)
         as.character(callComparisons(design, pseudobulk, variance, sensitivity)$call)
     }
@@ -173,4 +173,33 @@ test_that('the pi1-mapped alpha never exceeds the FDR level', {
     expect_true(is.na(a[['fixed']]))
     expect_error(estimateSensitivity(list(pergene = list(), summary = data.frame(comparison = character(0))),
                                      pi1 = 'storey'), 'discoveries')
+})
+
+test_that('the call uses expected recall (mean power at the target) with cutoff 0.5', {
+    sce <- sim_sce(n_per_group = 6, n_genes = 200, cells_per = 40, seed = 12)
+    x <- pbSetup(sce, sample = 'donor', group = 'condition', annotations = 'cell_type',
+                 thetaReps = 0)
+    v <- estimateVariance(x, method = 'edgeR')
+    s <- estimateSensitivity(v, targetLFC = 1)
+    expect_true(all(s$expected_recall >= 0 & s$expected_recall <= 1))
+    for (key in names(v$pergene)) {
+        r <- s[s$comparison == key, ]
+        ap <- analytic_power(v$pergene[[key]], 1, 0.8, 0.05, r$pi1, NULL)
+        expect_equal(r$expected_recall, mean(ap$power))
+    }
+    call_at <- function(er) {
+        cmp <- 'a:c:B_vs_A'
+        design <- data.frame(comparison = cmp, estimable = TRUE, nA = 6, nB = 6,
+                             max_cramerV = 0, max_vif = 1, stringsAsFactors = FALSE)
+        pseudobulk <- data.frame(comparison = cmp, cells_cond_cor = 0, n_testable = 500,
+                                 stringsAsFactors = FALSE)
+        variance <- data.frame(comparison = cmp, stringsAsFactors = FALSE)
+        sensitivity <- data.frame(comparison = cmp, expected_recall = er, sensitivity_fraction = 0.1,
+                                  target_lfc = 1, stringsAsFactors = FALSE)
+        res <- callComparisons(design, pseudobulk, variance, sensitivity)
+        c(as.character(res$call), res$reason)
+    }
+    expect_equal(call_at(0.55)[1], 'Adequate')
+    expect_equal(call_at(0.45)[1], 'Underpowered')
+    expect_match(call_at(0.45)[2], 'expected recall 45%')
 })

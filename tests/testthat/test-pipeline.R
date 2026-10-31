@@ -7,7 +7,7 @@ test_that('assessAll runs end to end and returns a tidy comparison table', {
     # 2 cell types x 1 contrast (B vs A)
     expect_equal(nrow(res), 2L)
     expect_true(all(c('comparison', 'cluster', 'call', 'reason', 'median_phi_donor',
-                      'sensitivity_fraction', 'regime') %in% colnames(res)))
+                      'sensitivity_fraction', 'expected_recall', 'regime') %in% colnames(res)))
     expect_true(is.factor(res$call))
     expect_true(all(as.character(res$call) %in%
                     c('Adequate', 'Underpowered', 'Caution', 'Invalid')))

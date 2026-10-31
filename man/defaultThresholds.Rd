@@ -9,8 +9,9 @@ defaultThresholds()
 \value{
 A named list: \code{cramerV} (condition-covariate association above which a
 comparison is flagged Caution), \code{vif} (variance inflation factor threshold),
-\code{sensitivity} (sensitivity fraction at or above which a comparison is
-adequately powered), \code{minSamples} (fewer samples per group is Invalid),
+\code{sensitivity} (expected recall at the target effect at or above which a
+comparison is adequately powered; 0.5 matches replication failure defined as
+recall below 0.5), \code{minSamples} (fewer samples per group is Invalid),
 \code{cellsCondCor} (absolute correlation of log cells per sample with condition
 above which cell-count imbalance is flagged Caution), \code{cellsCondAlpha}
 (the correlation must also exceed the critical value at this level for the
