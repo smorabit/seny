@@ -35,6 +35,9 @@
 #' @importFrom edgeR DGEList filterByExpr calcNormFactors estimateDisp glmQLFit aveLogCPM cpm
 estimateVariance <- function(x, method = c('edgeR', 'deseq2', 'voom', 'dreamlet')) {
     method <- match.arg(method)
+    if (method == 'dreamlet') {
+        stop('method "dreamlet" is post-MVP (mixed / repeated-measures designs) and not yet implemented')
+    }
     summ <- list(); pergene <- list()
     for (se in as.list(x)) {
         aggregation <- S4Vectors::metadata(se)$aggregation
@@ -43,7 +46,13 @@ estimateVariance <- function(x, method = c('edgeR', 'deseq2', 'voom', 'dreamlet'
         for (i in seq_len(nrow(cmp))) {
             d <- comparison_data(se, cmp$cluster[i], cmp$A[i], cmp$B[i])
             key <- cmp$comparison[i]
-            fit <- if (!is.null(d) && length(d$group) >= 2) fit_null(d, method, aggregation) else NULL
+            # a fit the method cannot make (e.g. DESeq2 with one sample per group)
+            # is no fit: the comparison is then called on its design alone
+            fit <- if (!is.null(d) && length(d$group) >= 2) {
+                tryCatch(fit_null(d, method, aggregation), error = function(e) NULL)
+            } else {
+                NULL
+            }
             if (is.null(fit)) {
                 summ[[key]] <- variance_summary(key, method, NULL)
                 next
@@ -204,8 +213,10 @@ fit_deseq2 <- function(d) {
     ok <- is.finite(phi) & rowSums(is.na(mu)) == 0
     g <- rownames(dds)[ok]
     phi <- phi[ok]; mu <- mu[ok, , drop = FALSE]
-    n_cov <- if (is.null(d$covariates)) 0 else ncol(d$covariates)
-    df <- length(d$group) - 2 - n_cov
+    # DESeq2's Wald test uses a normal reference, so power does too (df = Inf); a t
+    # on n - 2 df made the DESeq2 path badly pessimistic at few donors (E7: mid-range
+    # bias -0.66 at 3 donors per group, ~0 with the normal reference)
+    df <- Inf
     list(genes = g, se_log2 = nb_se(mu, phi, d$group), df = rep(df, length(g)),
          pvalue = stats::setNames(wald$pvalue[ok], g),
          group = d$group, n_i = d$nCells, nb = TRUE, phi_total = phi,

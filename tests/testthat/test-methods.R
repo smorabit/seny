@@ -96,3 +96,13 @@ test_that('the edgeR SE uses the full-model QL variance; the decomposition stays
     # without DE the full-model variance agrees with the null fit
     expect_lt(abs(log(stats::median(eff(f0)) / stats::median(f0$phi_total))), 0.3)
 })
+
+test_that('the DESeq2 path evaluates power against a normal reference, as its Wald test', {
+    sce <- sim_sce(n_per_group = 3, n_genes = 200, cells_per = 40, seed = 5)
+    x <- pbSetup(sce, sample = 'donor', group = 'condition', annotations = 'cell_type',
+                 thetaReps = 0)
+    f <- estimateVariance(x, method = 'deseq2')$pergene[[1]]
+    expect_true(all(is.infinite(f$df)))
+    ap <- analytic_power(f, 1, 0.8, 0.05, 0.05, NULL)
+    expect_true(all(is.finite(ap$mde) & is.finite(ap$power)))
+})
