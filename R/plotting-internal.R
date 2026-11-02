@@ -34,14 +34,6 @@ require_attr <- function(res, which) {
     a
 }
 
-# per-gene minimum detectable effect from the stored SE and df at the
-# comparison's per-gene alpha (shared by the sensitivity plot and the card). The
-# MDE does not depend on the target effect.
-#' @noRd
-mde_from_se <- function(se_log2, df, alpha, power = 0.8) {
-    (stats::qt(1 - alpha / 2, df) + stats::qt(power, df)) * se_log2
-}
-
 # add a per-annotation facet only when there is more than one annotation set
 #' @noRd
 facet_by_annotation <- function(p, df) {

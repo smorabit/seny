@@ -28,14 +28,16 @@ second problem:
 | Call | Meaning |
 | --- | --- |
 | **Invalid** | Type I error cannot be trusted (design not estimable, too few samples per group). |
-| **Caution** | Valid, but a specific risk applies (condition confounded with a covariate, or cell-count imbalance tracking the condition). |
+| **Caution** | Valid, but a specific risk applies (condition confounded with a covariate, cell-count imbalance tracking the condition, or a subtype shift inside the cluster that would make genes look DE on its own). |
 | **Underpowered** | Valid but unable to detect the target effect (sensitivity too low, or too few testable genes). |
 | **Adequate** | No flags. |
 
 ## The example dataset
 
 `seny` ships a small simulated dataset: 24 donors (12 per condition), three cell
-types, each planted in a different regime so the call varies.
+types, each planted in a different regime so the call varies. A finer annotation,
+`cell_type_fine`, splits CD4 T into naive and memory subtypes; we come back to it
+under *Composition*.
 
 ```{r load}
 library(seny)
@@ -120,6 +122,54 @@ plotComparison(res, "cell_type:NK:B_vs_A")
 Other views: `plotConfounding()` (Layer-1 association), `plotCells()` (cells per
 sample by condition), `plotSensitivity()` (detectable effect vs expression) and
 `plotPower()` (power vs effect size).
+
+## Composition: subtype shifts inside a cluster
+
+A broad cluster often holds subtypes, and their shares can differ between the
+conditions. Pseudobulk DE on the broad cluster then reports the subtypes' marker
+genes as DE although no gene changes within any subtype. CD4 T looked
+**Adequate** above, but its naive and memory subtypes shift with the condition:
+
+```{r fine}
+table(sce$cell_type_fine, sce$condition)
+```
+
+Give `assessAll()` both annotation levels. `seny` works out which level nests in
+which from the cells, and for each broad cluster:
+
+- tests the subtypes' shares of the cluster with `speckle::propeller`;
+- predicts, per gene, the log2 fold change the observed shift alone would cause,
+  and counts the genes where it exceeds the gene's own minimum detectable effect
+  (they would be called DE from composition alone);
+- labels each DEG of the broad cluster's own test as *composition-driven*,
+  *within-child DE*, *mixed* or *unresolved*, by comparing the observed change
+  with the prediction and checking whether any subtype shows the gene as DE.
+
+```{r composition}
+res2 <- assessAll(sce, sample = "donor", group = "condition",
+                  annotations = c("cell_type", "cell_type_fine"), targetLFC = 1)
+d2 <- as.data.frame(res2)
+cols <- c("annotation", "cluster", "call", "composition", "comp_child",
+          "n_comp_sensitive", "n_parent_deg", "n_comp_driven")
+knitr::kable(d2[d2$annotation == "cell_type", cols], digits = 2, row.names = FALSE)
+d2$reason[d2$comparison == "cell_type:CD4T:B_vs_A"]
+```
+
+CD4 T is now **Caution**: the memory share rises from about 40% to 66%, enough to
+make 40 genes look DE at the broad level. `plotComposition()` shows the shift and
+which of the cluster's DEGs it explains: composition-driven genes sit on the
+diagonal, while the genes that really change inside the subtypes do not.
+
+```{r compplot, fig.width = 10, fig.height = 4.5, fig.alt = "Subtype shares and composition attribution for CD4 T"}
+plotComposition(res2, "cell_type:CD4T:B_vs_A")
+```
+
+What to do with a composition Caution: test the subtypes separately (their own
+calls are in the same table), or interpret the broad cluster's DEGs with the
+attribution in hand. A cluster whose overall share differs between conditions is
+reported (`share_A`, `share_B`, `share_fdr`) but not flagged, since that alone
+does not bias DE within it. With a single annotation level the composition is
+`"not assessed"`.
 
 ## Thresholds and honest reporting
 

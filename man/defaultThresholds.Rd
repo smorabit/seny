@@ -19,7 +19,14 @@ comparison's sample size, so chance correlations in small designs are not
 flagged: the cutoff is \code{max(cellsCondCor, r_crit(n))}, about 0.81 at 6
 samples and \code{cellsCondCor} from ~16 samples), and \code{minTestable} (fewer
 testable genes is Underpowered). The layer-2 values, like the others, are
-provisional placeholders until E1-E8.
+provisional placeholders until E1-E8. The composition values (see
+\code{\link[=assessComposition]{assessComposition()}}) are advisory until the E5/E6 calibration:
+\code{compFDR} (propeller FDR below which a child's share within its parent is
+called shifted), \code{compFrac} (share of testable genes that would look DE
+from that shift alone at or above which the comparison is flagged Caution)
+and \code{compExplained} (share of a parent DEG's observed log2 fold change the
+predicted shift-only change must explain for the gene to be attributed to
+composition).
 }
 \description{
 Provisional values used by \code{\link[=callComparisons]{callComparisons()}}. The final numbers are to be

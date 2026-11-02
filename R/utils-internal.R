@@ -96,3 +96,11 @@ build_design <- function(group, covariates = NULL) {
     list(design = design, coef = coef_idx, estimable = rank_ok && resid_df >= 1,
          resid_df = resid_df)
 }
+
+# per-gene minimum detectable effect from the stored SE and df at the
+# comparison's per-gene alpha (shared by the plots and the composition layer).
+# The MDE does not depend on the target effect.
+#' @noRd
+mde_from_se <- function(se_log2, df, alpha, power = 0.8) {
+    (stats::qt(1 - alpha / 2, df) + stats::qt(power, df)) * se_log2
+}

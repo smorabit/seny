@@ -9,7 +9,8 @@ Description: For every cluster-by-contrast comparison in a multi-sample
     why. The diagnostics are analytic: design validity and confounding
     (layer 1), pseudobulk quality (layer 2), variance structure and sensitivity
     (layer 4), with a minimum detectable effect per gene from a
-    negative-binomial variance model. No per-dataset simulation. The name is a
+    negative-binomial variance model, and subtype composition shifts that would
+    make genes look differentially expressed on their own. No per-dataset simulation. The name is a
     backronym -- Sanity checks for differential gene Expression in NoisY data --
     and also the Catalan word for common sense.
 License: MIT + file LICENSE
@@ -34,8 +35,10 @@ Imports:
     ggrepel,
     patchwork,
     scales,
+    speckle,
     methods,
-    stats
+    stats,
+    utils
 Suggests:
     SingleCellExperiment,
     testthat (>= 3.0.0),

@@ -9,7 +9,8 @@ callComparisons(
   pseudobulk,
   variance,
   sensitivity,
-  thresholds = defaultThresholds()
+  thresholds = defaultThresholds(),
+  composition = NULL
 )
 }
 \arguments{
@@ -18,6 +19,9 @@ callComparisons(
 \code{\link[=estimateSensitivity]{estimateSensitivity()}}.}
 
 \item{thresholds}{A list from \code{\link[=defaultThresholds]{defaultThresholds()}}.}
+
+\item{composition}{Optional \verb{$summary} of \code{\link[=assessComposition]{assessComposition()}}. \code{NULL}
+(default) skips the composition columns and flag.}
 }
 \value{
 A \link[S4Vectors:DataFrame]{S4Vectors::DataFrame}, one row per comparison, with all metrics,
@@ -27,7 +31,9 @@ the \code{call} and a \code{reason} string.
 Merges the layer metrics into one tidy table, one row per comparison, and
 assigns each comparison a call: \strong{Invalid} (the contrast is not estimable, or
 too few samples per group), \strong{Caution} (estimable but the condition is
-confounded with a covariate, or cell-count imbalance tracks the condition),
+confounded with a covariate, cell-count imbalance tracks the condition, or a
+subtype shift within the cluster would by itself make enough genes look DE;
+see \code{\link[=assessComposition]{assessComposition()}}),
 \strong{Underpowered} (valid but the expected recall at the target effect is below
 \code{thresholds$sensitivity}, or too few testable genes), or \strong{Adequate}. Severity order is
 Invalid > Caution > Underpowered > Adequate; the \code{reason} column lists every

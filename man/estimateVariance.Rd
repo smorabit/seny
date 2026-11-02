@@ -16,8 +16,9 @@ estimateVariance(x, method = c("edgeR", "deseq2", "voom", "dreamlet"))
 A list with \code{summary} (a \code{data.frame}, one row per comparison, with the
 \code{method}, the NB decomposition and regime) and \code{pergene} (a named list of
 per-comparison fits carrying \code{se_log2} and \code{df} for sensitivity, and the
-method's own p-values for the condition, \code{pvalue}, behind the
-\code{pi1 = "discoveries"} mapping in \code{\link[=estimateSensitivity]{estimateSensitivity()}}).
+method's own p-values and log2 fold changes for the condition, \code{pvalue}
+(behind the \code{pi1 = "discoveries"} mapping in \code{\link[=estimateSensitivity]{estimateSensitivity()}}) and
+\code{logfc} (behind the composition attribution in \code{\link[=assessComposition]{assessComposition()}})).
 }
 \description{
 For every comparison, fits the chosen DE method and returns the per-gene

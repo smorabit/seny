@@ -19,8 +19,10 @@ plotComparison <- function(res, comparison) {
     hdr <- ggplot2::ggplot() + ggplot2::theme_void() +
         ggplot2::annotate('text', x = 0, y = 1, hjust = 0, size = 5.3, fontface = 'bold',
             label = paste0(row$cluster, ' : ', row$B, ' vs ', row$A, '  \u2014  ', as.character(row$call))) +
-        ggplot2::annotate('text', x = 0, y = 0.35, hjust = 0, size = 3.5, colour = 'grey30',
+        ggplot2::annotate('text', x = 0, y = 0.55, hjust = 0, size = 3.5, colour = 'grey30',
             label = paste0('reason: ', row$reason)) +
+        ggplot2::annotate('text', x = 0, y = 0.15, hjust = 0, size = 3.2, colour = 'grey40',
+            label = composition_text(row)) +
         ggplot2::xlim(0, 1) + ggplot2::ylim(0, 1.3)
     panels <- patchwork::wrap_plots(comparison_donut(row), sens_one(res, comparison),
                                     cells_one(res, row), nrow = 1)
@@ -81,4 +83,17 @@ cells_one <- function(res, row) {
         ggbeeswarm::geom_quasirandom(width = 0.25, size = 1.2, alpha = 0.6) +
         ggplot2::scale_color_manual(values = seny_cond_colors, guide = 'none') +
         ggplot2::labs(x = 'condition', y = 'cells', title = 'cells per sample') + seny_theme()
+}
+
+#' One line on the comparison's composition for the card header
+#' @noRd
+composition_text <- function(row) {
+    if (is.null(row$composition)) return('')
+    if (row$composition != 'assessed') {
+        return(paste0('composition: ', row$composition,
+                      if (row$composition == 'not assessed') ' (needs a finer annotation nested in this one)' else ''))
+    }
+    sprintf('composition: most shifted subtype %s %.0f%% -> %.0f%% (FDR %.2g); %d genes would look DE from the shift alone; %d of %d parent DEGs composition-driven',
+            row$comp_child, 100 * row$comp_share_A, 100 * row$comp_share_B, row$comp_min_fdr,
+            as.integer(row$n_comp_sensitive), as.integer(row$n_comp_driven), as.integer(row$n_parent_deg))
 }

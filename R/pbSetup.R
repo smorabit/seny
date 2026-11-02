@@ -74,7 +74,45 @@ pbSetup <- function(sce, sample, group, annotations, covariates = character(0),
                              minCells, aggregation, thetaCells, thetaDonors, thetaReps)
     }, BPPARAM = BPPARAM)
     names(sets) <- annotations
-    S4Vectors::SimpleList(sets)
+    out <- S4Vectors::SimpleList(sets)
+    if (length(annotations) >= 2) {
+        S4Vectors::metadata(out)$hierarchy <- infer_hierarchy(cd, sample, annotations)
+    }
+    out
+}
+
+#' Parent-child map between annotation levels, from the cells
+#'
+#' For every pair of annotation levels, the coarser one (fewer clusters) is the
+#' parent when its clusters nest the finer ones: each child goes to the parent
+#' holding most of its cells, and the pair is kept when at least 80% of the
+#' cells sit in their child's majority parent. Returns the child-to-parent map
+#' (with each child's purity) and the per-sample cell counts of every
+#' parent-child cell set, which give the children's shares within a parent.
+#' @noRd
+infer_hierarchy <- function(cd, sample, annotations, min_purity = 0.8) {
+    n_cl <- vapply(annotations, function(a) length(unique(stats::na.omit(cd[[a]]))), numeric(1))
+    maps <- list(); cells <- list()
+    for (pa in annotations) for (ch in annotations) {
+        if (n_cl[[pa]] >= n_cl[[ch]]) next
+        ok <- !is.na(cd[[pa]]) & !is.na(cd[[ch]])
+        tab <- table(as.character(cd[[ch]][ok]), as.character(cd[[pa]][ok]))
+        if (sum(apply(tab, 1, max)) / sum(tab) < min_purity) next
+        maps[[length(maps) + 1]] <- data.frame(
+            parent_annotation = pa, child_annotation = ch, child = rownames(tab),
+            parent = colnames(tab)[max.col(tab, ties.method = 'first')],
+            purity = apply(tab, 1, max) / rowSums(tab), n_cells = as.numeric(rowSums(tab)),
+            stringsAsFactors = FALSE)
+        jt <- as.data.frame(table(sample = as.character(cd[[sample]][ok]),
+                                  parent = as.character(cd[[pa]][ok]),
+                                  child = as.character(cd[[ch]][ok])),
+                            stringsAsFactors = FALSE)
+        jt <- jt[jt$Freq > 0, ]
+        cells[[length(cells) + 1]] <- data.frame(parent_annotation = pa, child_annotation = ch,
+            jt[, c('sample', 'parent', 'child')], nCells = jt$Freq, stringsAsFactors = FALSE)
+    }
+    if (length(maps) == 0) return(NULL)
+    list(map = do.call(rbind, maps), cells = do.call(rbind, cells))
 }
 
 #' Default contrasts: every non-reference level versus the first level
@@ -100,6 +138,10 @@ build_annotation_set <- function(counts, cd, sample, group, ann, covariates,
     pbid <- interaction(cd[[sample]], cluster, drop = TRUE, sep = '__')
     pb <- pb_sum(counts, pbid)
     ncells <- as.integer(table(pbid)[colnames(pb)])
+    # per-cluster gene totals over all its cells, before minCells: the per-cell
+    # expression of each cluster that the composition layer mixes
+    pb_cluster <- unname(vapply(split(cluster, pbid), function(x) x[1], character(1))[colnames(pb)])
+    totals <- cluster_totals(pb, ncells, pb_cluster, cd, pbid, group)
     # mean aggregation (non-integer) pairs with the limma path; sum stays integer
     if (aggregation == 'mean') pb <- sweep(pb, 2, ncells, '/')
 
@@ -113,7 +155,7 @@ build_annotation_set <- function(counts, cd, sample, group, ann, covariates,
 
     # pre-filter per-sample cell counts, so layer 2 can report the fraction of
     # samples dropped for falling below minCells (the drop happens next)
-    cell_counts <- meta[, c('cluster', 'group', 'nCells')]
+    cell_counts <- meta[, c('sample', 'cluster', 'group', 'nCells')]
 
     keep_pb <- meta$nCells >= minCells
     pb <- pb[, keep_pb, drop = FALSE]
@@ -137,6 +179,24 @@ build_annotation_set <- function(counts, cd, sample, group, ann, covariates,
     S4Vectors::metadata(se) <- list(sample = sample, group = group,
         covariates = covariates, contrasts = contrasts, minCells = minCells,
         aggregation = aggregation, theta = thetas, annotation = ann,
-        cell_counts = cell_counts)
+        cell_counts = cell_counts, cluster_totals = totals)
     se
+}
+
+#' Gene totals and cell numbers per cluster, overall and per group, from the
+#' (sum) pseudobulks before any minCells filter
+#' @noRd
+cluster_totals <- function(pb, ncells, pb_cluster, cd, pbid, group) {
+    pb_group <- unname(vapply(split(as.character(cd[[group]]), pbid),
+                              function(x) x[1], character(1))[colnames(pb)])
+    sum_by <- function(sel) {
+        f <- factor(pb_cluster[sel])
+        ind <- Matrix::sparseMatrix(i = seq_along(f), j = as.integer(f), x = 1,
+                                    dims = c(length(f), nlevels(f)),
+                                    dimnames = list(NULL, levels(f)))
+        list(counts = as.matrix(pb[, sel, drop = FALSE] %*% ind),
+             cells = stats::setNames(as.numeric(tapply(ncells[sel], f, sum)), levels(f)))
+    }
+    by_group <- lapply(stats::setNames(nm = unique(pb_group)), function(g) sum_by(pb_group == g))
+    c(sum_by(rep(TRUE, length(pb_cluster))), list(by_group = by_group))
 }

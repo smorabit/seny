@@ -2,7 +2,8 @@
 #'
 #' The main entry point. Runs the pipeline on a single-cell dataset:
 #' [pbSetup()] -> [assessDesign()] -> [assessPseudobulk()] ->
-#' [estimateVariance()] -> [estimateSensitivity()] -> [callComparisons()], and
+#' [estimateVariance()] -> [estimateSensitivity()] -> [assessComposition()] ->
+#' [callComparisons()], and
 #' returns the comparison table with an Adequate / Underpowered / Caution /
 #' Invalid call per cluster-by-contrast comparison.
 #'
@@ -14,12 +15,17 @@
 #' @param power,fdr,pi1,alphaFixed Sensitivity settings passed to
 #'   [estimateSensitivity()].
 #' @param thresholds A list from [defaultThresholds()].
+#' @param compReference Source of the per-cell subtype expression in
+#'   [assessComposition()]: `"pooled"` (default) or `"reference"`.
 #' @param thetaReps Subsample repeats for the cell-level theta fit, passed to
 #'   [pbSetup()]; `0` skips it (the call is unchanged, the variance
 #'   decomposition is `NA`).
 #' @return A [S4Vectors::DataFrame], one row per comparison, with the metrics,
 #'   the `call` and a `reason`. The [pbSetup()] object is attached as
-#'   `attr(, "pb")` for inspection.
+#'   `attr(, "pb")`, the per-gene table as `attr(, "pergene")` and the full
+#'   [assessComposition()] result as `attr(, "composition")`. Composition beyond
+#'   the cluster share needs two nested annotation levels in `annotations`
+#'   (e.g. broad and fine).
 #' @export
 #' @examples
 #' \dontrun{
@@ -32,6 +38,7 @@ assessAll <- function(sce, sample, group, annotations, covariates = character(0)
                       assayName = 'counts', method = c('edgeR', 'deseq2', 'voom'),
                       targetLFC = 1, power = 0.8, fdr = 0.05,
                       pi1 = 'discoveries', alphaFixed = NULL, thresholds = defaultThresholds(), thetaReps = 3,
+                      compReference = c('pooled', 'reference'),
                       BPPARAM = BiocParallel::SerialParam()) {
     method <- match.arg(method)
     x <- pbSetup(sce, sample = sample, group = group, annotations = annotations,
@@ -43,8 +50,12 @@ assessAll <- function(sce, sample, group, annotations, covariates = character(0)
     variance <- estimateVariance(x, method = method)
     sensitivity <- estimateSensitivity(variance, targetLFC = targetLFC, power = power,
                                        fdr = fdr, pi1 = pi1, alphaFixed = alphaFixed)
-    res <- callComparisons(design, pseudobulk, variance$summary, sensitivity, thresholds)
+    composition <- assessComposition(x, variance, sensitivity, power = power, fdr = fdr,
+                                     reference = match.arg(compReference), thresholds = thresholds)
+    res <- callComparisons(design, pseudobulk, variance$summary, sensitivity, thresholds,
+                           composition = composition$summary)
     attr(res, 'pb') <- x
+    attr(res, 'composition') <- composition
     attr(res, 'pergene') <- collect_pergene(variance$pergene)
     res
 }

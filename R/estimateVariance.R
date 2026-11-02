@@ -29,8 +29,9 @@
 #' @return A list with `summary` (a `data.frame`, one row per comparison, with the
 #'   `method`, the NB decomposition and regime) and `pergene` (a named list of
 #'   per-comparison fits carrying `se_log2` and `df` for sensitivity, and the
-#'   method's own p-values for the condition, `pvalue`, behind the
-#'   `pi1 = "discoveries"` mapping in [estimateSensitivity()]).
+#'   method's own p-values and log2 fold changes for the condition, `pvalue`
+#'   (behind the `pi1 = "discoveries"` mapping in [estimateSensitivity()]) and
+#'   `logfc` (behind the composition attribution in [assessComposition()])).
 #' @export
 #' @importFrom edgeR DGEList filterByExpr calcNormFactors estimateDisp glmQLFit aveLogCPM cpm
 estimateVariance <- function(x, method = c('edgeR', 'deseq2', 'voom', 'dreamlet')) {
@@ -170,7 +171,7 @@ fit_edger <- function(d) {
     df_prior <- if (is.null(full)) stats::median(qfit$df.prior) else full$df_prior
     df <- (length(d$group) - 2) + df_prior
     list(genes = g, se_log2 = nb_se(mu, phi_se, d$group) * sqrt(s2_post), df = rep(df, length(g)),
-         pvalue = full$pvalue, s2_post = s2_post,
+         pvalue = full$pvalue, logfc = full$logfc, s2_post = s2_post,
          group = d$group, n_i = d$nCells, nb = TRUE, phi_total = phi, phi_se = phi_se,
          theta = align_theta(d$theta, g), mean_count = rowMeans(d$counts[g, , drop = FALSE]),
          acpm = edgeR::aveLogCPM(y))
@@ -189,7 +190,8 @@ disp_full <- function(y, d) {
         qt <- edgeR::glmQLFTest(qf, coef = bd$coef)
         list(ql_disp = qf$dispersion, s2_post = qf$s2.post,
              df_prior = stats::median(qf$df.prior),
-             pvalue = stats::setNames(qt$table$PValue, rownames(qt)))
+             pvalue = stats::setNames(qt$table$PValue, rownames(qt)),
+             logfc = stats::setNames(qt$table$logFC, rownames(qt)))
     }, error = function(e) NULL)
 }
 
@@ -219,6 +221,7 @@ fit_deseq2 <- function(d) {
     df <- Inf
     list(genes = g, se_log2 = nb_se(mu, phi, d$group), df = rep(df, length(g)),
          pvalue = stats::setNames(wald$pvalue[ok], g),
+         logfc = stats::setNames(wald$log2FoldChange[ok], g),
          group = d$group, n_i = d$nCells, nb = TRUE, phi_total = phi,
          theta = align_theta(d$theta, g), mean_count = rowMeans(as.matrix(d$counts)[g, , drop = FALSE]),
          acpm = edgeR::aveLogCPM(edgeR::DGEList(as.matrix(d$counts)[g, , drop = FALSE])))
@@ -248,6 +251,7 @@ fit_voom <- function(d, aggregation) {
     g <- rownames(fit$coefficients)
     se_log2 <- fit$stdev.unscaled[, coef] * sqrt(fit$s2.post)
     list(genes = g, se_log2 = se_log2, df = fit$df.total, pvalue = fit$p.value[, coef],
+         logfc = fit$coefficients[, coef],
          group = d$group, n_i = d$nCells, nb = FALSE, acpm = fit$Amean)
 }
 

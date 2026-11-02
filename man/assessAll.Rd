@@ -22,6 +22,7 @@ assessAll(
   alphaFixed = NULL,
   thresholds = defaultThresholds(),
   thetaReps = 3,
+  compReference = c("pooled", "reference"),
   BPPARAM = BiocParallel::SerialParam()
 )
 }
@@ -67,18 +68,25 @@ require \code{aggregation = "sum"}; \code{aggregation = "mean"} requires \code{"
 \code{\link[=pbSetup]{pbSetup()}}; \code{0} skips it (the call is unchanged, the variance
 decomposition is \code{NA}).}
 
+\item{compReference}{Source of the per-cell subtype expression in
+\code{\link[=assessComposition]{assessComposition()}}: \code{"pooled"} (default) or \code{"reference"}.}
+
 \item{BPPARAM}{A \code{BiocParallelParam} object for the per-cluster theta
 estimation. Default \code{\link[BiocParallel:SerialParam]{BiocParallel::SerialParam()}}.}
 }
 \value{
 A \link[S4Vectors:DataFrame]{S4Vectors::DataFrame}, one row per comparison, with the metrics,
 the \code{call} and a \code{reason}. The \code{\link[=pbSetup]{pbSetup()}} object is attached as
-\code{attr(, "pb")} for inspection.
+\code{attr(, "pb")}, the per-gene table as \code{attr(, "pergene")} and the full
+\code{\link[=assessComposition]{assessComposition()}} result as \code{attr(, "composition")}. Composition beyond
+the cluster share needs two nested annotation levels in \code{annotations}
+(e.g. broad and fine).
 }
 \description{
 The main entry point. Runs the pipeline on a single-cell dataset:
 \code{\link[=pbSetup]{pbSetup()}} -> \code{\link[=assessDesign]{assessDesign()}} -> \code{\link[=assessPseudobulk]{assessPseudobulk()}} ->
-\code{\link[=estimateVariance]{estimateVariance()}} -> \code{\link[=estimateSensitivity]{estimateSensitivity()}} -> \code{\link[=callComparisons]{callComparisons()}}, and
+\code{\link[=estimateVariance]{estimateVariance()}} -> \code{\link[=estimateSensitivity]{estimateSensitivity()}} -> \code{\link[=assessComposition]{assessComposition()}} ->
+\code{\link[=callComparisons]{callComparisons()}}, and
 returns the comparison table with an Adequate / Underpowered / Caution /
 Invalid call per cluster-by-contrast comparison.
 }

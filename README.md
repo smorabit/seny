@@ -47,8 +47,9 @@ See `vignette("seny")` for the full walk-through.
 
 ## Status
 
-Experimental (P1 MVP). The package covers diagnostic layers 1, 2 and 4; the call
-thresholds in `defaultThresholds()` are **provisional placeholders** being
-recalibrated from a validation study (OneK1K, AIDA and an in-house atlas). Outlier
-detection, empirical checks, composition assessment, calibrated power and an HTML
-report are planned.
+Experimental. The package covers diagnostic layers 1, 2 and 4 and composition
+(subtype shifts inside a cluster, with two nested annotation levels passed to
+`annotations`). The call thresholds in `defaultThresholds()` are **provisional
+placeholders** being recalibrated from a validation study (OneK1K, AIDA); the
+composition thresholds are advisory until their own calibration. Outlier
+detection, empirical checks and an HTML report are planned.
