@@ -109,8 +109,9 @@ variance model, so it has no NB decomposition (those columns are <code>NA</code>
     <p>A list with <code>summary</code> (a <code>data.frame</code>, one row per comparison, with the
 <code>method</code>, the NB decomposition and regime) and <code>pergene</code> (a named list of
 per-comparison fits carrying <code>se_log2</code> and <code>df</code> for sensitivity, and the
-method's own p-values for the condition, <code>pvalue</code>, behind the
-<code>pi1 = "discoveries"</code> mapping in <code><a href="estimateSensitivity.html">estimateSensitivity()</a></code>).</p>
+method's own p-values and log2 fold changes for the condition, <code>pvalue</code>
+(behind the <code>pi1 = "discoveries"</code> mapping in <code><a href="estimateSensitivity.html">estimateSensitivity()</a></code>) and
+<code>logfc</code> (behind the composition attribution in <code><a href="assessComposition.html">assessComposition()</a></code>)).</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>

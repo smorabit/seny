@@ -10,6 +10,8 @@ The main entry point. Runs the pipeline on a single-cell dataset:
 -\>
 [`estimateSensitivity()`](https://smorabit.github.io/seny/reference/estimateSensitivity.md)
 -\>
+[`assessComposition()`](https://smorabit.github.io/seny/reference/assessComposition.md)
+-\>
 [`callComparisons()`](https://smorabit.github.io/seny/reference/callComparisons.md),
 and returns the comparison table with an Adequate / Underpowered /
 Caution / Invalid call per cluster-by-contrast comparison.
@@ -35,6 +37,7 @@ assessAll(
   alphaFixed = NULL,
   thresholds = defaultThresholds(),
   thetaReps = 3,
+  compReference = c("pooled", "reference"),
   BPPARAM = BiocParallel::SerialParam()
 )
 ```
@@ -116,6 +119,12 @@ assessAll(
   `0` skips it (the call is unchanged, the variance decomposition is
   `NA`).
 
+- compReference:
+
+  Source of the per-cell subtype expression in
+  [`assessComposition()`](https://smorabit.github.io/seny/reference/assessComposition.md):
+  `"pooled"` (default) or `"reference"`.
+
 - BPPARAM:
 
   A `BiocParallelParam` object for the per-cluster theta estimation.
@@ -128,7 +137,12 @@ A
 [S4Vectors::DataFrame](https://rdrr.io/pkg/S4Vectors/man/DataFrame-class.html),
 one row per comparison, with the metrics, the `call` and a `reason`. The
 [`pbSetup()`](https://smorabit.github.io/seny/reference/pbSetup.md)
-object is attached as `attr(, "pb")` for inspection.
+object is attached as `attr(, "pb")`, the per-gene table as
+`attr(, "pergene")` and the full
+[`assessComposition()`](https://smorabit.github.io/seny/reference/assessComposition.md)
+result as `attr(, "composition")`. Composition beyond the cluster share
+needs two nested annotation levels in `annotations` (e.g. broad and
+fine).
 
 ## Examples
 

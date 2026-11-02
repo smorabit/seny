@@ -3,12 +3,15 @@
 Merges the layer metrics into one tidy table, one row per comparison,
 and assigns each comparison a call: **Invalid** (the contrast is not
 estimable, or too few samples per group), **Caution** (estimable but the
-condition is confounded with a covariate, or cell-count imbalance tracks
-the condition), **Underpowered** (valid but the expected recall at the
-target effect is below `thresholds$sensitivity`, or too few testable
-genes), or **Adequate**. Severity order is Invalid \> Caution \>
-Underpowered \> Adequate; the `reason` column lists every flag so the
-single call never hides a second problem.
+condition is confounded with a covariate, cell-count imbalance tracks
+the condition, or a subtype shift within the cluster would by itself
+make enough genes look DE; see
+[`assessComposition()`](https://smorabit.github.io/seny/reference/assessComposition.md)),
+**Underpowered** (valid but the expected recall at the target effect is
+below `thresholds$sensitivity`, or too few testable genes), or
+**Adequate**. Severity order is Invalid \> Caution \> Underpowered \>
+Adequate; the `reason` column lists every flag so the single call never
+hides a second problem.
 
 ## Usage
 
@@ -18,7 +21,8 @@ callComparisons(
   pseudobulk,
   variance,
   sensitivity,
-  thresholds = defaultThresholds()
+  thresholds = defaultThresholds(),
+  composition = NULL
 )
 ```
 
@@ -37,6 +41,12 @@ callComparisons(
 
   A list from
   [`defaultThresholds()`](https://smorabit.github.io/seny/reference/defaultThresholds.md).
+
+- composition:
+
+  Optional `$summary` of
+  [`assessComposition()`](https://smorabit.github.io/seny/reference/assessComposition.md).
+  `NULL` (default) skips the composition columns and flag.
 
 ## Value
 

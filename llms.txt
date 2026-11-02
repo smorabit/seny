@@ -53,13 +53,14 @@ for the full walk-through.
 
 ## Status
 
-Experimental (P1 MVP). The package covers diagnostic layers 1, 2 and 4;
-the call thresholds in
+Experimental. The package covers diagnostic layers 1, 2 and 4 and
+composition (subtype shifts inside a cluster, with two nested annotation
+levels passed to `annotations`). The call thresholds in
 [`defaultThresholds()`](https://smorabit.github.io/seny/reference/defaultThresholds.md)
 are **provisional placeholders** being recalibrated from a validation
-study (OneK1K, AIDA and an in-house atlas). Outlier detection, empirical
-checks, composition assessment, calibrated power and an HTML report are
-planned.
+study (OneK1K, AIDA); the composition thresholds are advisory until
+their own calibration. Outlier detection, empirical checks and an HTML
+report are planned.
 
 # Package index
 
@@ -86,6 +87,9 @@ The per-comparison diagnostics, in order.
   per-gene SE
 - [`estimateSensitivity()`](https://smorabit.github.io/seny/reference/estimateSensitivity.md)
   : Layer 4 (sensitivity): minimum detectable effect and power
+- [`assessComposition()`](https://smorabit.github.io/seny/reference/assessComposition.md)
+  : Composition: cluster shares, subtype shifts and composition-driven
+  DE
 
 ## Calling
 
@@ -116,6 +120,9 @@ Read the calls at a glance and explain them.
   : Power vs effect size
 - [`plotComparison()`](https://smorabit.github.io/seny/reference/plotComparison.md)
   : Comparison card: a per-comparison deep dive
+- [`plotComposition()`](https://smorabit.github.io/seny/reference/plotComposition.md)
+  : Composition of one comparison: subtype shares and composition-driven
+  DE
 
 # Articles
 

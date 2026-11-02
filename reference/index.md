@@ -23,6 +23,9 @@ The per-comparison diagnostics, in order.
   per-gene SE
 - [`estimateSensitivity()`](https://smorabit.github.io/seny/reference/estimateSensitivity.md)
   : Layer 4 (sensitivity): minimum detectable effect and power
+- [`assessComposition()`](https://smorabit.github.io/seny/reference/assessComposition.md)
+  : Composition: cluster shares, subtype shifts and composition-driven
+  DE
 
 ## Calling
 
@@ -53,3 +56,6 @@ Read the calls at a glance and explain them.
   : Power vs effect size
 - [`plotComparison()`](https://smorabit.github.io/seny/reference/plotComparison.md)
   : Comparison card: a per-comparison deep dive
+- [`plotComposition()`](https://smorabit.github.io/seny/reference/plotComposition.md)
+  : Composition of one comparison: subtype shares and composition-driven
+  DE
