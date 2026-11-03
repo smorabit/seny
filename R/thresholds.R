@@ -24,13 +24,15 @@
 #'   flagged Caution; 0.01 maximised Youden's J for predicting artefacts in at
 #'   least 1% of genes, with no flags without a shift) and `compExplained`
 #'   (share of a parent DEG's observed log2 fold change the predicted shift-only
-#'   change must explain for the gene to be attributed to composition; 0.25,
-#'   since the observed change of a detected DEG is inflated by selection).
+#'   change must explain for the gene to be attributed to composition; 0.5:
+#'   on natural age shifts in OneK1K (E5) it labels 3% of real within-subtype
+#'   DEGs composition-driven, against 8% at 0.25, the best value on imposed
+#'   shifts, while 0.99 of its composition-driven labels are artefacts).
 #' @export
 defaultThresholds <- function() {
     list(cramerV = 0.3, vif = 5, sensitivity = 0.5, minSamples = 2,
          cellsCondCor = 0.5, cellsCondAlpha = 0.05, minTestable = 200,
-         compFDR = 0.05, compFrac = 0.01, compExplained = 0.25)
+         compFDR = 0.05, compFrac = 0.01, compExplained = 0.5)
 }
 
 #' Cutoff for the cell-count-vs-condition correlation at n samples: the larger of

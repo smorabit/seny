@@ -27,8 +27,10 @@ alone, as a share of testable genes, at or above which the comparison is
 flagged Caution; 0.01 maximised Youden's J for predicting artefacts in at
 least 1\% of genes, with no flags without a shift) and \code{compExplained}
 (share of a parent DEG's observed log2 fold change the predicted shift-only
-change must explain for the gene to be attributed to composition; 0.25,
-since the observed change of a detected DEG is inflated by selection).
+change must explain for the gene to be attributed to composition; 0.5:
+on natural age shifts in OneK1K (E5) it labels 3\% of real within-subtype
+DEGs composition-driven, against 8\% at 0.25, the best value on imposed
+shifts, while 0.99 of its composition-driven labels are artefacts).
 }
 \description{
 Provisional values used by \code{\link[=callComparisons]{callComparisons()}}. The final numbers are to be
