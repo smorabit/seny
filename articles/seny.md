@@ -264,7 +264,7 @@ str(defaultThresholds())
 #>  $ minTestable   : num 200
 #>  $ compFDR       : num 0.05
 #>  $ compFrac      : num 0.01
-#>  $ compExplained : num 0.25
+#>  $ compExplained : num 0.5
 ```
 
 This run assessed 3 comparisons. When you scan many comparisons at once,
