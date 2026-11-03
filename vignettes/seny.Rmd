@@ -139,8 +139,8 @@ which from the cells, and for each broad cluster:
 
 - tests the subtypes' shares of the cluster with `speckle::propeller`;
 - predicts, per gene, the log2 fold change the observed shift alone would cause,
-  and counts the genes where it exceeds the gene's own minimum detectable effect
-  (they would be called DE from composition alone);
+  and the power to call it DE, which sums to the number of DEGs expected from
+  composition alone;
 - labels each DEG of the broad cluster's own test as *composition-driven*,
   *within-child DE*, *mixed* or *unresolved*, by comparing the observed change
   with the prediction and checking whether any subtype shows the gene as DE.
@@ -150,13 +150,13 @@ res2 <- assessAll(sce, sample = "donor", group = "condition",
                   annotations = c("cell_type", "cell_type_fine"), targetLFC = 1)
 d2 <- as.data.frame(res2)
 cols <- c("annotation", "cluster", "call", "composition", "comp_child",
-          "n_comp_sensitive", "n_parent_deg", "n_comp_driven")
+          "exp_comp_deg", "n_parent_deg", "n_comp_driven")
 knitr::kable(d2[d2$annotation == "cell_type", cols], digits = 2, row.names = FALSE)
 d2$reason[d2$comparison == "cell_type:CD4T:B_vs_A"]
 ```
 
 CD4 T is now **Caution**: the memory share rises from about 40% to 66%, enough to
-make 40 genes look DE at the broad level. `plotComposition()` shows the shift and
+make about 44 genes look DE at the broad level. `plotComposition()` shows the shift and
 which of the cluster's DEGs it explains: composition-driven genes sit on the
 diagonal, while the genes that really change inside the subtypes do not.
 

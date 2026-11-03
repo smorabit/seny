@@ -16,7 +16,7 @@
 #'   [estimateSensitivity()].
 #' @param thresholds A list from [defaultThresholds()].
 #' @param compReference Source of the per-cell subtype expression in
-#'   [assessComposition()]: `"pooled"` (default) or `"reference"`.
+#'   [assessComposition()]: `"reference"` (default) or `"pooled"`.
 #' @param thetaReps Subsample repeats for the cell-level theta fit, passed to
 #'   [pbSetup()]; `0` skips it (the call is unchanged, the variance
 #'   decomposition is `NA`).
@@ -38,7 +38,7 @@ assessAll <- function(sce, sample, group, annotations, covariates = character(0)
                       assayName = 'counts', method = c('edgeR', 'deseq2', 'voom'),
                       targetLFC = 1, power = 0.8, fdr = 0.05,
                       pi1 = 'discoveries', alphaFixed = NULL, thresholds = defaultThresholds(), thetaReps = 3,
-                      compReference = c('pooled', 'reference'),
+                      compReference = c('reference', 'pooled'),
                       BPPARAM = BiocParallel::SerialParam()) {
     method <- match.arg(method)
     x <- pbSetup(sce, sample = sample, group = group, annotations = annotations,

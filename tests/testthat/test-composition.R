@@ -32,6 +32,10 @@ test_that('a subtype shift without within-subtype DE is flagged and attributed',
     expect_true(all(g$lfc_comp[g$gene %in% paste0('g', 1:20)] > 0))
     expect_true(all(g$lfc_comp[g$gene %in% paste0('g', 21:40)] < 0))
     expect_lt(mean(g$sensitive[!g$gene %in% markers]), 0.05)
+    # the expected composition DEGs are carried by the markers
+    expect_gt(sum(g$comp_power[g$gene %in% markers]), 30)
+    expect_lt(mean(g$comp_power[!g$gene %in% markers]), 0.05)
+    expect_equal(t_row$exp_comp_deg, sum(g$comp_power))
     # the parent's DEGs are the markers, attributed to composition
     deg <- g[g$parent_de, ]
     expect_gt(nrow(deg), 10)

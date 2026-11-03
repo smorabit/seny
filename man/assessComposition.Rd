@@ -10,7 +10,7 @@ assessComposition(
   sensitivity,
   power = 0.8,
   fdr = 0.05,
-  reference = c("pooled", "reference"),
+  reference = c("reference", "pooled"),
   thresholds = defaultThresholds()
 )
 }
@@ -28,9 +28,9 @@ per-gene \code{alpha} sets the MDE).}
 attribution. Default 0.05.}
 
 \item{reference}{Where the per-cell child expression \code{c_gk} comes from:
-\code{"pooled"} (all samples of the contrast's groups; default) or \code{"reference"}
-(the contrast's reference group A only, which avoids attributing real
-within-child DE in B to composition).}
+\code{"reference"} (the contrast's reference group A only; default, which avoids
+attributing real within-child DE in B to composition) or \code{"pooled"} (all
+samples of the contrast's groups).}
 
 \item{thresholds}{A list from \code{\link[=defaultThresholds]{defaultThresholds()}}; uses \code{compExplained}.}
 }
@@ -38,9 +38,10 @@ within-child DE in B to composition).}
 A list with \code{summary} (a \code{data.frame}, one row per comparison: the
 cluster share \code{share_A}, \code{share_B}, \code{share_fdr}; the \code{composition} status;
 the most shifted child \code{comp_child} with \code{comp_share_A}, \code{comp_share_B} and
-\code{comp_min_fdr}; \code{n_comp_sensitive}, \code{frac_comp_sensitive}; \code{n_parent_deg},
+\code{comp_min_fdr}; \code{exp_comp_deg}, \code{frac_comp_expected}; \code{n_comp_sensitive},
+\code{frac_comp_sensitive}; \code{n_parent_deg},
 \code{n_comp_driven}, \code{frac_comp_driven}), \code{genes} (per gene and comparison:
-\code{lfc_comp}, \code{mde}, \code{sensitive}, the observed \code{logfc}, \code{padj}, \code{parent_de},
+\code{lfc_comp}, \code{comp_power}, \code{mde}, \code{sensitive}, the observed \code{logfc}, \code{padj}, \code{parent_de},
 \code{child_de} and the attribution \code{label}) and \code{proportions} (per sample and
 child, the child's share of the parent).
 }
@@ -64,12 +65,17 @@ change the observed subtype shift alone would produce in the parent's
 library-size-normalised pseudobulk,
 \verb{log2[(sum_k pB_k c_gk / sum_k pB_k L_k) / (sum_k pA_k c_gk / sum_k pA_k L_k)]},
 with \code{p} the donor-averaged child shares, \code{c_gk} the per-cell mean count of
-gene g in child k and \code{L_k} the child's per-cell library size. A gene is
-composition-sensitive when this shift-only change exceeds its own minimum
-detectable effect (the layer-4 MDE at the comparison's per-gene alpha), so
-the shift alone would be detected as DE. \code{\link[=callComparisons]{callComparisons()}} flags the
-comparison \strong{Caution} when a child's shift is significant and the share of
-composition-sensitive testable genes reaches \code{thresholds$compFrac}.
+gene g in child k and \code{L_k} the child's per-cell library size. Each gene's
+power to be called DE at that shift-only change (layer 4, at the
+comparison's per-gene alpha) is \code{comp_power}; their sum, \code{exp_comp_deg}, is
+the number of DEGs the shift alone is expected to produce, and
+\code{frac_comp_expected} its share of the testable genes. \code{\link[=callComparisons]{callComparisons()}}
+flags the comparison \strong{Caution} when a child's shift is significant and
+\code{frac_comp_expected} reaches \code{thresholds$compFrac}. Genes whose shift-only
+change exceeds their own MDE (\code{sensitive}, counted in \code{n_comp_sensitive})
+are reported too, but many genes each at modest power add up to many
+artefacts without any of them clearing the MDE, so that count understates
+the risk (E6).
 \item \strong{Attribution of the observed parent DEGs} (retrospective, reported
 only): each gene the method's own test calls DE in the parent at \code{fdr} is
 labelled \emph{composition-driven} (DE in no child comparison, and the

@@ -17,12 +17,17 @@
 #'    library-size-normalised pseudobulk,
 #'    `log2[(sum_k pB_k c_gk / sum_k pB_k L_k) / (sum_k pA_k c_gk / sum_k pA_k L_k)]`,
 #'    with `p` the donor-averaged child shares, `c_gk` the per-cell mean count of
-#'    gene g in child k and `L_k` the child's per-cell library size. A gene is
-#'    composition-sensitive when this shift-only change exceeds its own minimum
-#'    detectable effect (the layer-4 MDE at the comparison's per-gene alpha), so
-#'    the shift alone would be detected as DE. [callComparisons()] flags the
-#'    comparison **Caution** when a child's shift is significant and the share of
-#'    composition-sensitive testable genes reaches `thresholds$compFrac`.
+#'    gene g in child k and `L_k` the child's per-cell library size. Each gene's
+#'    power to be called DE at that shift-only change (layer 4, at the
+#'    comparison's per-gene alpha) is `comp_power`; their sum, `exp_comp_deg`, is
+#'    the number of DEGs the shift alone is expected to produce, and
+#'    `frac_comp_expected` its share of the testable genes. [callComparisons()]
+#'    flags the comparison **Caution** when a child's shift is significant and
+#'    `frac_comp_expected` reaches `thresholds$compFrac`. Genes whose shift-only
+#'    change exceeds their own MDE (`sensitive`, counted in `n_comp_sensitive`)
+#'    are reported too, but many genes each at modest power add up to many
+#'    artefacts without any of them clearing the MDE, so that count understates
+#'    the risk (E6).
 #' 4. **Attribution of the observed parent DEGs** (retrospective, reported
 #'    only): each gene the method's own test calls DE in the parent at `fdr` is
 #'    labelled *composition-driven* (DE in no child comparison, and the
@@ -42,21 +47,22 @@
 #' @param fdr FDR at which parent and child genes count as DE for the
 #'   attribution. Default 0.05.
 #' @param reference Where the per-cell child expression `c_gk` comes from:
-#'   `"pooled"` (all samples of the contrast's groups; default) or `"reference"`
-#'   (the contrast's reference group A only, which avoids attributing real
-#'   within-child DE in B to composition).
+#'   `"reference"` (the contrast's reference group A only; default, which avoids
+#'   attributing real within-child DE in B to composition) or `"pooled"` (all
+#'   samples of the contrast's groups).
 #' @param thresholds A list from [defaultThresholds()]; uses `compExplained`.
 #' @return A list with `summary` (a `data.frame`, one row per comparison: the
 #'   cluster share `share_A`, `share_B`, `share_fdr`; the `composition` status;
 #'   the most shifted child `comp_child` with `comp_share_A`, `comp_share_B` and
-#'   `comp_min_fdr`; `n_comp_sensitive`, `frac_comp_sensitive`; `n_parent_deg`,
+#'   `comp_min_fdr`; `exp_comp_deg`, `frac_comp_expected`; `n_comp_sensitive`,
+#'   `frac_comp_sensitive`; `n_parent_deg`,
 #'   `n_comp_driven`, `frac_comp_driven`), `genes` (per gene and comparison:
-#'   `lfc_comp`, `mde`, `sensitive`, the observed `logfc`, `padj`, `parent_de`,
+#'   `lfc_comp`, `comp_power`, `mde`, `sensitive`, the observed `logfc`, `padj`, `parent_de`,
 #'   `child_de` and the attribution `label`) and `proportions` (per sample and
 #'   child, the child's share of the parent).
 #' @export
 assessComposition <- function(x, variance, sensitivity, power = 0.8, fdr = 0.05,
-                              reference = c('pooled', 'reference'),
+                              reference = c('reference', 'pooled'),
                               thresholds = defaultThresholds()) {
     reference <- match.arg(reference)
     th <- utils::modifyList(defaultThresholds(), thresholds)
@@ -108,6 +114,7 @@ empty_composition_row <- function(key) {
     data.frame(comparison = key, share_A = NA_real_, share_B = NA_real_, share_fdr = NA_real_,
                composition = 'not assessed', comp_child = NA_character_,
                comp_share_A = NA_real_, comp_share_B = NA_real_, comp_min_fdr = NA_real_,
+               exp_comp_deg = NA_real_, frac_comp_expected = NA_real_,
                n_comp_sensitive = NA_integer_, frac_comp_sensitive = NA_real_,
                n_parent_deg = NA_integer_, n_comp_driven = NA_integer_,
                frac_comp_driven = NA_real_, stringsAsFactors = FALSE)
@@ -177,7 +184,8 @@ parent_composition <- function(se, child_se, hier, ann, child_ann, cl, A, B, key
                               child = rep(rownames(m), ncol(m)), nCells = as.vector(m),
                               share = as.vector(prop), stringsAsFactors = FALSE)
 
-    # part 3: the shift-only log2 fold change and the genes whose MDE it clears
+    # part 3: the shift-only log2 fold change, each gene's power to be called DE at
+    # it, and the genes whose MDE it clears
     g <- fit$genes
     expr <- child_expression(S4Vectors::metadata(child_se)$cluster_totals, rownames(m), g,
                              A, reference)
@@ -186,6 +194,8 @@ parent_composition <- function(se, child_se, hier, ann, child_ann, cl, A, B, key
     lfc_comp[!is.finite(lfc_comp)] <- NA
     mde <- if (is.na(alpha)) rep(NA_real_, length(g)) else mde_from_se(fit$se_log2, fit$df, alpha, power)
     sensitive <- !is.na(lfc_comp) & !is.na(mde) & abs(lfc_comp) > mde
+    comp_power <- if (is.na(alpha)) rep(NA_real_, length(g))
+                  else power_from_se(fit$se_log2, fit$df, abs(ifelse(is.na(lfc_comp), 0, lfc_comp)), alpha)
 
     # part 4: attribution of the parent's own DEGs
     logfc <- if (is.null(fit$logfc)) rep(NA_real_, length(g)) else unname(fit$logfc[g])
@@ -215,10 +225,11 @@ parent_composition <- function(se, child_se, hier, ann, child_ann, cl, A, B, key
         comp_share_A = if (is.null(top)) NA_real_ else top$share_A,
         comp_share_B = if (is.null(top)) NA_real_ else top$share_B,
         comp_min_fdr = if (is.null(top)) NA_real_ else top$fdr,
+        exp_comp_deg = sum(comp_power), frac_comp_expected = mean(comp_power),
         n_comp_sensitive = sum(sensitive), frac_comp_sensitive = mean(sensitive),
         n_parent_deg = n_deg, n_comp_driven = n_comp,
         frac_comp_driven = if (n_deg > 0) n_comp / n_deg else NA_real_)
-    genes <- data.frame(comparison = key, gene = g, lfc_comp = lfc_comp, mde = mde,
+    genes <- data.frame(comparison = key, gene = g, lfc_comp = lfc_comp, comp_power = comp_power, mde = mde,
                         sensitive = sensitive, logfc = logfc, padj = padj,
                         parent_de = parent_de, child_de = child_de, label = label,
                         stringsAsFactors = FALSE)

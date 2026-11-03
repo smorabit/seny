@@ -17,18 +17,20 @@
 #'   samples and `cellsCondCor` from ~16 samples), and `minTestable` (fewer
 #'   testable genes is Underpowered). The layer-2 values, like the others, are
 #'   provisional placeholders until E1-E8. The composition values (see
-#'   [assessComposition()]) are advisory until the E5/E6 calibration:
-#'   `compFDR` (propeller FDR below which a child's share within its parent is
-#'   called shifted), `compFrac` (share of testable genes that would look DE
-#'   from that shift alone at or above which the comparison is flagged Caution)
-#'   and `compExplained` (share of a parent DEG's observed log2 fold change the
-#'   predicted shift-only change must explain for the gene to be attributed to
-#'   composition).
+#'   [assessComposition()]) were calibrated on imposed subtype shifts in
+#'   OneK1K (E6): `compFDR` (propeller FDR below which a child's share within
+#'   its parent is called shifted), `compFrac` (expected DEGs from that shift
+#'   alone, as a share of testable genes, at or above which the comparison is
+#'   flagged Caution; 0.01 maximised Youden's J for predicting artefacts in at
+#'   least 1% of genes, with no flags without a shift) and `compExplained`
+#'   (share of a parent DEG's observed log2 fold change the predicted shift-only
+#'   change must explain for the gene to be attributed to composition; 0.25,
+#'   since the observed change of a detected DEG is inflated by selection).
 #' @export
 defaultThresholds <- function() {
     list(cramerV = 0.3, vif = 5, sensitivity = 0.5, minSamples = 2,
          cellsCondCor = 0.5, cellsCondAlpha = 0.05, minTestable = 200,
-         compFDR = 0.05, compFrac = 0.01, compExplained = 0.5)
+         compFDR = 0.05, compFrac = 0.01, compExplained = 0.25)
 }
 
 #' Cutoff for the cell-count-vs-condition correlation at n samples: the larger of

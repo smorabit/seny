@@ -41,17 +41,17 @@ callComparisons <- function(design, pseudobulk, variance, sensitivity,
         too_few <- is.na(r$estimable) || !r$estimable ||
                    min(r$nA, r$nB) < th$minSamples
         comp_shift <- !is.null(r$comp_min_fdr) && !is.na(r$comp_min_fdr) &&
-                      r$comp_min_fdr < th$compFDR && !is.na(r$frac_comp_sensitive) &&
-                      r$frac_comp_sensitive >= th$compFrac
+                      r$comp_min_fdr < th$compFDR && !is.na(r$frac_comp_expected) &&
+                      r$frac_comp_expected >= th$compFrac
 
         if (confounded) flags <- c(flags, sprintf('confounded (Cramer V %.2f, VIF %.1f)',
                                                   r$max_cramerV, r$max_vif))
         if (imbalanced) flags <- c(flags, sprintf('cell-count imbalance correlated with condition (r %.2f, cutoff %.2f at %d samples; consider sample weights)',
                                                   r$cells_cond_cor, cells_cut, r$nA + r$nB))
-        if (comp_shift) flags <- c(flags, sprintf('composition shift within the cluster (%s %.0f%% -> %.0f%%, FDR %.2g): %d genes (%.1f%%) would look DE from the shift alone',
+        if (comp_shift) flags <- c(flags, sprintf('composition shift within the cluster (%s %.0f%% -> %.0f%%, FDR %.2g): ~%.0f genes (%.1f%%) expected to look DE from the shift alone',
                                                   r$comp_child, 100 * r$comp_share_A, 100 * r$comp_share_B,
-                                                  r$comp_min_fdr, as.integer(r$n_comp_sensitive),
-                                                  100 * r$frac_comp_sensitive))
+                                                  r$comp_min_fdr, r$exp_comp_deg,
+                                                  100 * r$frac_comp_expected))
         if (few_testable) flags <- c(flags, sprintf('too few testable genes (%d)', r$n_testable))
         if (underpowered) flags <- c(flags, sprintf('underpowered (expected recall %.0f%% at log2FC %.2g)',
                                                     100 * r$expected_recall, r$target_lfc))

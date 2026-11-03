@@ -93,7 +93,7 @@ composition_text <- function(row) {
         return(paste0('composition: ', row$composition,
                       if (row$composition == 'not assessed') ' (needs a finer annotation nested in this one)' else ''))
     }
-    sprintf('composition: most shifted subtype %s %.0f%% -> %.0f%% (FDR %.2g); %d genes would look DE from the shift alone; %d of %d parent DEGs composition-driven',
+    sprintf('composition: most shifted subtype %s %.0f%% -> %.0f%% (FDR %.2g); ~%.0f genes expected to look DE from the shift alone; %d of %d parent DEGs composition-driven',
             row$comp_child, 100 * row$comp_share_A, 100 * row$comp_share_B, row$comp_min_fdr,
-            as.integer(row$n_comp_sensitive), as.integer(row$n_comp_driven), as.integer(row$n_parent_deg))
+            row$exp_comp_deg, as.integer(row$n_comp_driven), as.integer(row$n_parent_deg))
 }

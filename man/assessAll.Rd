@@ -22,7 +22,7 @@ assessAll(
   alphaFixed = NULL,
   thresholds = defaultThresholds(),
   thetaReps = 3,
-  compReference = c("pooled", "reference"),
+  compReference = c("reference", "pooled"),
   BPPARAM = BiocParallel::SerialParam()
 )
 }
@@ -69,7 +69,7 @@ require \code{aggregation = "sum"}; \code{aggregation = "mean"} requires \code{"
 decomposition is \code{NA}).}
 
 \item{compReference}{Source of the per-cell subtype expression in
-\code{\link[=assessComposition]{assessComposition()}}: \code{"pooled"} (default) or \code{"reference"}.}
+\code{\link[=assessComposition]{assessComposition()}}: \code{"reference"} (default) or \code{"pooled"}.}
 
 \item{BPPARAM}{A \code{BiocParallelParam} object for the per-cluster theta
 estimation. Default \code{\link[BiocParallel:SerialParam]{BiocParallel::SerialParam()}}.}
