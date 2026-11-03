@@ -185,9 +185,8 @@ the cells, and for each broad cluster:
 - tests the subtypes’ shares of the cluster with
   [`speckle::propeller`](https://rdrr.io/pkg/speckle/man/propeller.html);
 - predicts, per gene, the log2 fold change the observed shift alone
-  would cause, and counts the genes where it exceeds the gene’s own
-  minimum detectable effect (they would be called DE from composition
-  alone);
+  would cause, and the power to call it DE, which sums to the number of
+  DEGs expected from composition alone;
 - labels each DEG of the broad cluster’s own test as
   *composition-driven*, *within-child DE*, *mixed* or *unresolved*, by
   comparing the observed change with the prediction and checking whether
@@ -206,24 +205,24 @@ res2 <- assessAll(sce, sample = "donor", group = "condition",
 #> calcNormFactors has been renamed to normLibSizes
 d2 <- as.data.frame(res2)
 cols <- c("annotation", "cluster", "call", "composition", "comp_child",
-          "n_comp_sensitive", "n_parent_deg", "n_comp_driven")
+          "exp_comp_deg", "n_parent_deg", "n_comp_driven")
 knitr::kable(d2[d2$annotation == "cell_type", cols], digits = 2, row.names = FALSE)
 ```
 
-| annotation | cluster | call | composition | comp_child | n_comp_sensitive | n_parent_deg | n_comp_driven |
+| annotation | cluster | call | composition | comp_child | exp_comp_deg | n_parent_deg | n_comp_driven |
 |:---|:---|:---|:---|:---|---:|---:|---:|
-| cell_type | CD4T | Caution | assessed | CD4 memory | 40 | 70 | 40 |
+| cell_type | CD4T | Caution | assessed | CD4 memory | 44.36 | 70 | 40 |
 | cell_type | CD8T | Caution | single child | NA | NA | NA | NA |
 | cell_type | NK | Underpowered | single child | NA | NA | NA | NA |
 
 ``` r
 
 d2$reason[d2$comparison == "cell_type:CD4T:B_vs_A"]
-#> [1] "composition shift within the cluster (CD4 memory 40% -> 66%, FDR 0): 40 genes (10.0%) would look DE from the shift alone"
+#> [1] "composition shift within the cluster (CD4 memory 40% -> 66%, FDR 0): ~44 genes (11.1%) expected to look DE from the shift alone"
 ```
 
 CD4 T is now **Caution**: the memory share rises from about 40% to 66%,
-enough to make 40 genes look DE at the broad level.
+enough to make about 44 genes look DE at the broad level.
 [`plotComposition()`](https://smorabit.github.io/seny/reference/plotComposition.md)
 shows the shift and which of the cluster’s DEGs it explains:
 composition-driven genes sit on the diagonal, while the genes that
@@ -265,7 +264,7 @@ str(defaultThresholds())
 #>  $ minTestable   : num 200
 #>  $ compFDR       : num 0.05
 #>  $ compFrac      : num 0.01
-#>  $ compExplained : num 0.5
+#>  $ compExplained : num 0.25
 ```
 
 This run assessed 3 comparisons. When you scan many comparisons at once,
@@ -320,7 +319,7 @@ sessionInfo()
 #>  [33] pkgconfig_2.0.3             Matrix_1.7-6               
 #>  [35] R6_2.6.1                    fastmap_1.2.0              
 #>  [37] MatrixGenerics_1.24.0       fitdistrplus_1.2-6         
-#>  [39] future_1.80.0               shiny_1.14.0               
+#>  [39] future_1.82.0               shiny_1.14.0               
 #>  [41] digest_0.6.39               patchwork_1.3.2            
 #>  [43] S4Vectors_0.50.3            tensor_1.5.1               
 #>  [45] Seurat_5.6.0                RSpectra_0.16-2            

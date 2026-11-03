@@ -37,7 +37,7 @@ assessAll(
   alphaFixed = NULL,
   thresholds = defaultThresholds(),
   thetaReps = 3,
-  compReference = c("pooled", "reference"),
+  compReference = c("reference", "pooled"),
   BPPARAM = BiocParallel::SerialParam()
 )
 ```
@@ -123,7 +123,7 @@ assessAll(
 
   Source of the per-cell subtype expression in
   [`assessComposition()`](https://smorabit.github.io/seny/reference/assessComposition.md):
-  `"pooled"` (default) or `"reference"`.
+  `"reference"` (default) or `"pooled"`.
 
 - BPPARAM:
 

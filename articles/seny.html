@@ -290,9 +290,8 @@ and for each broad cluster:</p>
 <li>tests the subtypes’ shares of the cluster with
 <code><a href="https://rdrr.io/pkg/speckle/man/propeller.html" class="external-link">speckle::propeller</a></code>;</li>
 <li>predicts, per gene, the log2 fold change the observed shift alone
-would cause, and counts the genes where it exceeds the gene’s own
-minimum detectable effect (they would be called DE from composition
-alone);</li>
+would cause, and the power to call it DE, which sums to the number of
+DEGs expected from composition alone;</li>
 <li>labels each DEG of the broad cluster’s own test as
 <em>composition-driven</em>, <em>within-child DE</em>, <em>mixed</em> or
 <em>unresolved</em>, by comparing the observed change with the
@@ -310,7 +309,7 @@ prediction and checking whether any subtype shows the gene as DE.</li>
 <span><span class="co">#&gt; calcNormFactors has been renamed to normLibSizes</span></span>
 <span><span class="va">d2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">res2</span><span class="op">)</span></span>
 <span><span class="va">cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"annotation"</span>, <span class="st">"cluster"</span>, <span class="st">"call"</span>, <span class="st">"composition"</span>, <span class="st">"comp_child"</span>,</span>
-<span>          <span class="st">"n_comp_sensitive"</span>, <span class="st">"n_parent_deg"</span>, <span class="st">"n_comp_driven"</span><span class="op">)</span></span>
+<span>          <span class="st">"exp_comp_deg"</span>, <span class="st">"n_parent_deg"</span>, <span class="st">"n_comp_driven"</span><span class="op">)</span></span>
 <span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">d2</span><span class="op">[</span><span class="va">d2</span><span class="op">$</span><span class="va">annotation</span> <span class="op">==</span> <span class="st">"cell_type"</span>, <span class="va">cols</span><span class="op">]</span>, digits <span class="op">=</span> <span class="fl">2</span>, row.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <colgroup>
@@ -319,7 +318,7 @@ prediction and checking whether any subtype shows the gene as DE.</li>
 <col width="13%">
 <col width="13%">
 <col width="11%">
-<col width="17%">
+<col width="13%">
 <col width="13%">
 <col width="14%">
 </colgroup>
@@ -329,7 +328,7 @@ prediction and checking whether any subtype shows the gene as DE.</li>
 <th align="left">call</th>
 <th align="left">composition</th>
 <th align="left">comp_child</th>
-<th align="right">n_comp_sensitive</th>
+<th align="right">exp_comp_deg</th>
 <th align="right">n_parent_deg</th>
 <th align="right">n_comp_driven</th>
 </tr></thead>
@@ -340,7 +339,7 @@ prediction and checking whether any subtype shows the gene as DE.</li>
 <td align="left">Caution</td>
 <td align="left">assessed</td>
 <td align="left">CD4 memory</td>
-<td align="right">40</td>
+<td align="right">44.36</td>
 <td align="right">70</td>
 <td align="right">40</td>
 </tr>
@@ -368,10 +367,10 @@ prediction and checking whether any subtype shows the gene as DE.</li>
 </table>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d2</span><span class="op">$</span><span class="va">reason</span><span class="op">[</span><span class="va">d2</span><span class="op">$</span><span class="va">comparison</span> <span class="op">==</span> <span class="st">"cell_type:CD4T:B_vs_A"</span><span class="op">]</span></span>
-<span><span class="co">#&gt; [1] "composition shift within the cluster (CD4 memory 40% -&gt; 66%, FDR 0): 40 genes (10.0%) would look DE from the shift alone"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "composition shift within the cluster (CD4 memory 40% -&gt; 66%, FDR 0): ~44 genes (11.1%) expected to look DE from the shift alone"</span></span></code></pre></div>
 <p>CD4 T is now <strong>Caution</strong>: the memory share rises from
-about 40% to 66%, enough to make 40 genes look DE at the broad level.
-<code><a href="../reference/plotComposition.html">plotComposition()</a></code> shows the shift and which of the
+about 40% to 66%, enough to make about 44 genes look DE at the broad
+level. <code><a href="../reference/plotComposition.html">plotComposition()</a></code> shows the shift and which of the
 cluster’s DEGs it explains: composition-driven genes sit on the
 diagonal, while the genes that really change inside the subtypes do
 not.</p>
@@ -406,7 +405,7 @@ not chosen up front.</p>
 <span><span class="co">#&gt;  $ minTestable   : num 200</span></span>
 <span><span class="co">#&gt;  $ compFDR       : num 0.05</span></span>
 <span><span class="co">#&gt;  $ compFrac      : num 0.01</span></span>
-<span><span class="co">#&gt;  $ compExplained : num 0.5</span></span></code></pre></div>
+<span><span class="co">#&gt;  $ compExplained : num 0.25</span></span></code></pre></div>
 <p>This run assessed 3 comparisons. When you scan many comparisons at
 once, treat the matrix as a screen, not a ranking: picking the standout
 cell after the fact inflates false positives. The call tells you which
@@ -457,7 +456,7 @@ multiple-testing control across them.</p>
 <span><span class="co">#&gt;  [33] pkgconfig_2.0.3             Matrix_1.7-6               </span></span>
 <span><span class="co">#&gt;  [35] R6_2.6.1                    fastmap_1.2.0              </span></span>
 <span><span class="co">#&gt;  [37] MatrixGenerics_1.24.0       fitdistrplus_1.2-6         </span></span>
-<span><span class="co">#&gt;  [39] future_1.80.0               shiny_1.14.0               </span></span>
+<span><span class="co">#&gt;  [39] future_1.82.0               shiny_1.14.0               </span></span>
 <span><span class="co">#&gt;  [41] digest_0.6.39               patchwork_1.3.2            </span></span>
 <span><span class="co">#&gt;  [43] S4Vectors_0.50.3            tensor_1.5.1               </span></span>
 <span><span class="co">#&gt;  [45] Seurat_5.6.0                RSpectra_0.16-2            </span></span>

@@ -55,7 +55,7 @@ step measures that risk for every comparison, in four parts:</p>
 <span>  <span class="va">sensitivity</span>,</span>
 <span>  power <span class="op">=</span> <span class="fl">0.8</span>,</span>
 <span>  fdr <span class="op">=</span> <span class="fl">0.05</span>,</span>
-<span>  reference <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pooled"</span>, <span class="st">"reference"</span><span class="op">)</span>,</span>
+<span>  reference <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"reference"</span>, <span class="st">"pooled"</span><span class="op">)</span>,</span>
 <span>  thresholds <span class="op">=</span> <span class="fu"><a href="defaultThresholds.html">defaultThresholds</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -88,9 +88,9 @@ attribution. Default 0.05.</p></dd>
 
 <dt id="arg-reference">reference<a class="anchor" aria-label="anchor" href="#arg-reference"></a></dt>
 <dd><p>Where the per-cell child expression <code>c_gk</code> comes from:
-<code>"pooled"</code> (all samples of the contrast's groups; default) or <code>"reference"</code>
-(the contrast's reference group A only, which avoids attributing real
-within-child DE in B to composition).</p></dd>
+<code>"reference"</code> (the contrast's reference group A only; default, which avoids
+attributing real within-child DE in B to composition) or <code>"pooled"</code> (all
+samples of the contrast's groups).</p></dd>
 
 
 <dt id="arg-thresholds">thresholds<a class="anchor" aria-label="anchor" href="#arg-thresholds"></a></dt>
@@ -102,9 +102,10 @@ within-child DE in B to composition).</p></dd>
     <p>A list with <code>summary</code> (a <code>data.frame</code>, one row per comparison: the
 cluster share <code>share_A</code>, <code>share_B</code>, <code>share_fdr</code>; the <code>composition</code> status;
 the most shifted child <code>comp_child</code> with <code>comp_share_A</code>, <code>comp_share_B</code> and
-<code>comp_min_fdr</code>; <code>n_comp_sensitive</code>, <code>frac_comp_sensitive</code>; <code>n_parent_deg</code>,
+<code>comp_min_fdr</code>; <code>exp_comp_deg</code>, <code>frac_comp_expected</code>; <code>n_comp_sensitive</code>,
+<code>frac_comp_sensitive</code>; <code>n_parent_deg</code>,
 <code>n_comp_driven</code>, <code>frac_comp_driven</code>), <code>genes</code> (per gene and comparison:
-<code>lfc_comp</code>, <code>mde</code>, <code>sensitive</code>, the observed <code>logfc</code>, <code>padj</code>, <code>parent_de</code>,
+<code>lfc_comp</code>, <code>comp_power</code>, <code>mde</code>, <code>sensitive</code>, the observed <code>logfc</code>, <code>padj</code>, <code>parent_de</code>,
 <code>child_de</code> and the attribution <code>label</code>) and <code>proportions</code> (per sample and
 child, the child's share of the parent).</p>
     </div>
@@ -123,12 +124,17 @@ change the observed subtype shift alone would produce in the parent's
 library-size-normalised pseudobulk,
 <code>log2[(sum_k pB_k c_gk / sum_k pB_k L_k) / (sum_k pA_k c_gk / sum_k pA_k L_k)]</code>,
 with <code>p</code> the donor-averaged child shares, <code>c_gk</code> the per-cell mean count of
-gene g in child k and <code>L_k</code> the child's per-cell library size. A gene is
-composition-sensitive when this shift-only change exceeds its own minimum
-detectable effect (the layer-4 MDE at the comparison's per-gene alpha), so
-the shift alone would be detected as DE. <code><a href="callComparisons.html">callComparisons()</a></code> flags the
-comparison <strong>Caution</strong> when a child's shift is significant and the share of
-composition-sensitive testable genes reaches <code>thresholds$compFrac</code>.</p></li>
+gene g in child k and <code>L_k</code> the child's per-cell library size. Each gene's
+power to be called DE at that shift-only change (layer 4, at the
+comparison's per-gene alpha) is <code>comp_power</code>; their sum, <code>exp_comp_deg</code>, is
+the number of DEGs the shift alone is expected to produce, and
+<code>frac_comp_expected</code> its share of the testable genes. <code><a href="callComparisons.html">callComparisons()</a></code>
+flags the comparison <strong>Caution</strong> when a child's shift is significant and
+<code>frac_comp_expected</code> reaches <code>thresholds$compFrac</code>. Genes whose shift-only
+change exceeds their own MDE (<code>sensitive</code>, counted in <code>n_comp_sensitive</code>)
+are reported too, but many genes each at modest power add up to many
+artefacts without any of them clearing the MDE, so that count understates
+the risk (E6).</p></li>
 <li><p><strong>Attribution of the observed parent DEGs</strong> (retrospective, reported
 only): each gene the method's own test calls DE in the parent at <code>fdr</code> is
 labelled <em>composition-driven</em> (DE in no child comparison, and the

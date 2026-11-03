@@ -15,7 +15,7 @@ assessComposition(
   sensitivity,
   power = 0.8,
   fdr = 0.05,
-  reference = c("pooled", "reference"),
+  reference = c("reference", "pooled"),
   thresholds = defaultThresholds()
 )
 ```
@@ -51,10 +51,10 @@ assessComposition(
 
 - reference:
 
-  Where the per-cell child expression `c_gk` comes from: `"pooled"` (all
-  samples of the contrast's groups; default) or `"reference"` (the
-  contrast's reference group A only, which avoids attributing real
-  within-child DE in B to composition).
+  Where the per-cell child expression `c_gk` comes from: `"reference"`
+  (the contrast's reference group A only; default, which avoids
+  attributing real within-child DE in B to composition) or `"pooled"`
+  (all samples of the contrast's groups).
 
 - thresholds:
 
@@ -67,12 +67,12 @@ assessComposition(
 A list with `summary` (a `data.frame`, one row per comparison: the
 cluster share `share_A`, `share_B`, `share_fdr`; the `composition`
 status; the most shifted child `comp_child` with `comp_share_A`,
-`comp_share_B` and `comp_min_fdr`; `n_comp_sensitive`,
-`frac_comp_sensitive`; `n_parent_deg`, `n_comp_driven`,
-`frac_comp_driven`), `genes` (per gene and comparison: `lfc_comp`,
-`mde`, `sensitive`, the observed `logfc`, `padj`, `parent_de`,
-`child_de` and the attribution `label`) and `proportions` (per sample
-and child, the child's share of the parent).
+`comp_share_B` and `comp_min_fdr`; `exp_comp_deg`, `frac_comp_expected`;
+`n_comp_sensitive`, `frac_comp_sensitive`; `n_parent_deg`,
+`n_comp_driven`, `frac_comp_driven`), `genes` (per gene and comparison:
+`lfc_comp`, `comp_power`, `mde`, `sensitive`, the observed `logfc`,
+`padj`, `parent_de`, `child_de` and the attribution `label`) and
+`proportions` (per sample and child, the child's share of the parent).
 
 ## Details
 
@@ -95,14 +95,18 @@ and child, the child's share of the parent).
     `log2[(sum_k pB_k c_gk / sum_k pB_k L_k) / (sum_k pA_k c_gk / sum_k pA_k L_k)]`,
     with `p` the donor-averaged child shares, `c_gk` the per-cell mean
     count of gene g in child k and `L_k` the child's per-cell library
-    size. A gene is composition-sensitive when this shift-only change
-    exceeds its own minimum detectable effect (the layer-4 MDE at the
-    comparison's per-gene alpha), so the shift alone would be detected
-    as DE.
+    size. Each gene's power to be called DE at that shift-only change
+    (layer 4, at the comparison's per-gene alpha) is `comp_power`; their
+    sum, `exp_comp_deg`, is the number of DEGs the shift alone is
+    expected to produce, and `frac_comp_expected` its share of the
+    testable genes.
     [`callComparisons()`](https://smorabit.github.io/seny/reference/callComparisons.md)
     flags the comparison **Caution** when a child's shift is significant
-    and the share of composition-sensitive testable genes reaches
-    `thresholds$compFrac`.
+    and `frac_comp_expected` reaches `thresholds$compFrac`. Genes whose
+    shift-only change exceeds their own MDE (`sensitive`, counted in
+    `n_comp_sensitive`) are reported too, but many genes each at modest
+    power add up to many artefacts without any of them clearing the MDE,
+    so that count understates the risk (E6).
 
 4.  **Attribution of the observed parent DEGs** (retrospective, reported
     only): each gene the method's own test calls DE in the parent at
