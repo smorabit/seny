@@ -13,3 +13,9 @@ First Bioconductor submission.
   checked and summed a block of cells at a time.
 * Plots: the traffic-light matrix (`plotAdequacy()`), the comparison card
   (`plotComparison()`) and the `plotX()` family.
+* The cell-level theta fit, which only feeds the depth / cell / donor variance
+  attribution, is off by default (`thetaReps = 0`); the calls do not use it. Use
+  `thetaReps = 3` for the attribution (20 donors per draw).
+* `reportSeny()` writes a self-contained HTML report (an R Markdown template,
+  editable via `rmarkdown::draft()`): summary, matrices, a sortable table of
+  every comparison, composition and per-comparison cards.

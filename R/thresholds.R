@@ -55,3 +55,19 @@ cells_cond_cutoff <- function(n, floor, alpha = NULL) {
     tc <- stats::qt(1 - alpha / 2, n - 2)
     max(floor, tc / sqrt(n - 2 + tc^2))
 }
+
+#' One line on where each default threshold comes from (the threshold audit
+#' before 0.99.0), for the report's appendix
+#' @noRd
+threshold_sources <- function() {
+    c(cramerV = 'null splits: false discoveries rise above the base rate from 0.3 (E1)',
+      vif = 'convention (R^2 = 0.8); adjusted fits stay calibrated, power cost is in expected recall',
+      sensitivity = 'matches replication failure, recall < 0.5 (E4c)',
+      minSamples = 'a group variance needs at least 2 samples',
+      cellsCondCor = 'imbalance breaks DESeq2 FDR control, not edgeR or voom (E7); Caution under DESeq2 only',
+      cellsCondAlpha = 'chance correlations in small designs are not flagged (E4)',
+      minTestable = 'convention guarding the genome-wide estimates (pi1, dispersion prior)',
+      compFDR = 'FDR convention for the subtype shift test',
+      compFrac = 'imposed subtype shifts: Youden J 0.94 (E6)',
+      compExplained = 'natural age shifts: 3% of real DEGs mislabelled (E5)')
+}

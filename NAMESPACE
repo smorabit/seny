@@ -18,6 +18,7 @@ export(plotPower)
 export(plotRegime)
 export(plotSensitivity)
 export(plotVariance)
+export(reportSeny)
 importFrom(S4Vectors,
   "metadata<-",
   DataFrame,

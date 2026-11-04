@@ -128,8 +128,14 @@ A family of plotting functions explains the calls. `plotVariance()` shows where
 each comparison's noise comes from --- the depth, cell and donor shares of the
 per-sample variance. A donor-dominated bar means only more donors will help.
 
+This attribution needs the cell-level overdispersion `theta`, fitted from the
+single cells. It is off by default because it is the slowest step and the
+calls do not use it; ask for it with `thetaReps = 3`:
+
 ```{r variance, fig.width = 6, fig.height = 3, fig.alt = "Variance attribution bars"}
-plotVariance(res)
+res_theta <- assessAll(sce, sample = "donor", group = "condition",
+                       annotations = "cell_type", targetLFC = 1, thetaReps = 3)
+plotVariance(res_theta)
 ```
 
 `plotRegime()` places the same decomposition on one triangle, coloured by the
@@ -137,14 +143,14 @@ call and sized by the median detectable effect: position shows where the noise
 is, size shows how hard detection is.
 
 ```{r regime, fig.width = 5.5, fig.height = 5, fig.alt = "Variance regime ternary"}
-plotRegime(res)
+plotRegime(res_theta)
 ```
 
 `plotComparison()` assembles a single comparison --- the call and its reason, the
 variance donut, the sensitivity curve and the cells per sample --- into one card.
 
 ```{r card, fig.width = 10, fig.height = 4, fig.alt = "Comparison card for one comparison"}
-plotComparison(res, "cell_type:NK:B_vs_A")
+plotComparison(res_theta, "cell_type:NK:B_vs_A")
 ```
 
 Other views: `plotConfounding()` (Layer-1 association), `plotCells()` (cells per
@@ -199,6 +205,21 @@ attribution in hand. A cluster whose overall share differs between conditions is
 reported (`share_A`, `share_B`, `share_fdr`) but not flagged, since that alone
 does not bias DE within it. With a single annotation level the composition is
 `"not assessed"`.
+
+## Sharing the results
+
+`reportSeny()` writes the whole assessment to one self-contained HTML file: a
+summary of the calls and their reasons, the traffic-light matrices, a sortable
+table of every comparison, the composition flags and a card per comparison
+(flagged ones first, up to `maxCards`). It needs pandoc, which ships with
+RStudio.
+
+```{r report, eval = FALSE}
+reportSeny(res2, file = "seny_report.html")
+```
+
+For an editable version, `rmarkdown::draft("my_report.Rmd", template =
+"seny_report", package = "seny")` copies the template.
 
 ## Thresholds and honest reporting
 

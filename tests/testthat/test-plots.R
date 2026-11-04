@@ -1,6 +1,7 @@
 test_that('the plotX family returns ggplots on an assessAll result', {
     sce <- sim_sce(n_per_group = 10, n_genes = 150, cells_per = 50, seed = 21)
-    res <- assessAll(sce, sample = 'donor', group = 'condition', annotations = 'cell_type')
+    res <- assessAll(sce, sample = 'donor', group = 'condition', annotations = 'cell_type',
+                     thetaReps = 3)
     expect_true(inherits(plotConfounding(res), 'ggplot'))
     expect_true(inherits(plotCells(res), 'ggplot'))
     expect_true(inherits(plotVariance(res), 'ggplot'))
@@ -46,4 +47,14 @@ test_that('NB-only plots have nothing to show under the voom method', {
     # the method-agnostic plots still work under voom
     expect_true(inherits(plotSensitivity(res), 'ggplot'))
     expect_true(inherits(plotPower(res), 'ggplot'))
+})
+
+test_that('theta is off by default and the card drops the donut without it', {
+    sce <- sim_sce(n_per_group = 6, n_genes = 120, cells_per = 40, seed = 23)
+    res <- assessAll(sce, sample = 'donor', group = 'condition', annotations = 'cell_type')
+    expect_equal(attr(res, 'settings')$thetaReps, 0)
+    expect_true(all(is.na(res$share_donor)))
+    card <- plotComparison(res, res$comparison[1])
+    expect_true(inherits(card, 'patchwork'))
+    expect_error(plotVariance(res), 'thetaReps = 3')
 })

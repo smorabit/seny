@@ -21,9 +21,11 @@
 #'   [pbSetup()]; `0` skips it (the call is unchanged, the variance
 #'   decomposition is `NA`).
 #' @return A [S4Vectors::DataFrame], one row per comparison, with the metrics,
-#'   the `call` and a `reason`. The [pbSetup()] object is attached as
-#'   `attr(, "pb")`, the per-gene table as `attr(, "pergene")` and the full
-#'   [assessComposition()] result as `attr(, "composition")`. Composition beyond
+#'   the `call`, a `reason` and `flags`. The [pbSetup()] object is attached as
+#'   `attr(, "pb")`, the per-gene table as `attr(, "pergene")`, the full
+#'   [assessComposition()] result as `attr(, "composition")` and the settings
+#'   of the run (method, target, thresholds, seny version) as
+#'   `attr(, "settings")`, which [reportSeny()] reads. Composition beyond
 #'   the cluster share needs two nested annotation levels in `annotations`
 #'   (e.g. broad and fine).
 #' @examples
@@ -37,7 +39,7 @@ assessAll <- function(sce, sample, group, annotations, covariates = character(0)
                       contrasts = NULL, minCells = 10, aggregation = c('sum', 'mean'),
                       assayName = 'counts', method = c('edgeR', 'deseq2', 'voom'),
                       targetLFC = 1, power = 0.8, fdr = 0.05,
-                      pi1 = 'discoveries', alphaFixed = NULL, thresholds = defaultThresholds(), thetaReps = 3,
+                      pi1 = 'discoveries', alphaFixed = NULL, thresholds = defaultThresholds(), thetaReps = 0,
                       compReference = c('reference', 'pooled'),
                       BPPARAM = BiocParallel::SerialParam()) {
     method <- match.arg(method)
@@ -57,6 +59,13 @@ assessAll <- function(sce, sample, group, annotations, covariates = character(0)
     attr(res, 'pb') <- x
     attr(res, 'composition') <- composition
     attr(res, 'pergene') <- collect_pergene(variance$pergene)
+    attr(res, 'settings') <- list(
+        annotations = annotations, sample = sample, group = group, covariates = covariates,
+        method = method, aggregation = match.arg(aggregation), targetLFC = targetLFC, power = power,
+        fdr = fdr, pi1 = pi1, alphaFixed = alphaFixed, minCells = minCells, thetaReps = thetaReps,
+        compReference = match.arg(compReference),
+        thresholds = utils::modifyList(defaultThresholds(), thresholds),
+        version = tryCatch(as.character(utils::packageVersion('seny')), error = function(e) NA_character_))
     res
 }
 

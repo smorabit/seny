@@ -25,7 +25,10 @@ callComparisons(
 }
 \value{
 A \link[S4Vectors:DataFrame]{S4Vectors::DataFrame}, one row per comparison, with all metrics,
-the \code{call} and a \code{reason} string.
+the \code{call}, a \code{reason} string and \code{flags}, the same flags as short codes
+separated by \verb{;} (\code{confounded}, \code{imbalance}, \code{composition},
+\code{few_testable}, \code{underpowered}, \code{too_few_samples}, \code{not_estimable}; empty
+when adequate).
 }
 \description{
 Merges the layer metrics into one tidy table, one row per comparison, and

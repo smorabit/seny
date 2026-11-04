@@ -16,8 +16,8 @@ pbSetup(
   aggregation = c("sum", "mean"),
   assayName = "counts",
   thetaCells = 50,
-  thetaDonors = 50,
-  thetaReps = 3,
+  thetaDonors = 20,
+  thetaReps = 0,
   BPPARAM = BiocParallel::SerialParam()
 )
 }
@@ -56,11 +56,16 @@ dropped. Default 10.}
 \item{assayName}{Name of the raw-count assay in \code{sce}. Default \code{"counts"}.}
 
 \item{thetaCells, thetaDonors, thetaReps}{Subsample size (cells per donor,
-donors) and number of draws for the cell-level \code{theta} ensemble.
-\code{thetaReps = 0} skips the theta fit (by far the slowest step): the
-adequacy call is unchanged, since the sensitivity uses the total
-pseudobulk dispersion, but the depth/cell/donor variance decomposition
-from \code{\link[=estimateVariance]{estimateVariance()}} is then \code{NA}.}
+donors) and number of draws for the cell-level \code{theta} ensemble. The
+default of 20 donors per draw gives the same variance shares and regime
+as 50, about 5 times faster (each draw's Cox-Reid-adjusted fit grows
+steeply with the number of donors).
+The default \code{thetaReps = 0} skips the theta fit, the slowest step (about
+45 s per cluster with 3 reps): the adequacy call is the same either way,
+since power uses the total pseudobulk dispersion, but the depth/cell/donor
+variance decomposition from \code{\link[=estimateVariance]{estimateVariance()}} (shares, regime,
+\code{\link[=plotVariance]{plotVariance()}}, \code{\link[=plotRegime]{plotRegime()}}) needs theta. Use \code{thetaReps = 3} to get
+it, i.e. to see whether more donors or more cells would help.}
 
 \item{BPPARAM}{A \code{BiocParallelParam} object for the per-cluster theta
 estimation. Default \code{\link[BiocParallel:SerialParam]{BiocParallel::SerialParam()}}.}

@@ -1,0 +1,6 @@
+name: seny report
+description: >
+  A shareable HTML report of an assessAll() result: the summary, the
+  traffic-light matrices, the comparison table, composition and per-comparison
+  cards. reportSeny() renders it; rmarkdown::draft() gives an editable copy.
+create_dir: false

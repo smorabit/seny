@@ -1,0 +1,182 @@
+---
+title: "`r params$title`"
+date: "`r format(Sys.Date())`"
+params:
+  res_path: "seny_result.rds"
+  max_cards: 100
+  title: "seny report"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    self_contained: true
+---
+
+```{r setup, include = FALSE}
+# render with seny::reportSeny(res), or edit a copy from
+# rmarkdown::draft("my_report.Rmd", template = "seny_report", package = "seny")
+# and point params$res_path at a saved assessAll() result
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, dpi = 80,
+                      fig.width = 8, fig.height = 4)
+if (!"package:seny" %in% search()) library(seny)
+res <- readRDS(params$res_path)
+d <- as.data.frame(res)
+settings <- attr(res, "settings")
+d$contrast <- paste0(d$B, " vs ", d$A)
+call_levels <- c("Invalid", "Caution", "Underpowered", "Adequate")
+call_colours <- c(Adequate = "#1A9850", Underpowered = "#FEE08B", Caution = "#FDAE61",
+                  Invalid = "#D73027")
+anchor <- function(key) paste0("card-", gsub("[^A-Za-z0-9]+", "-", key))
+
+# comparisons that get a card: flagged first (Invalid, Caution, Underpowered), then
+# Adequate; by expected recall within each call; capped at max_cards
+ord <- order(match(as.character(d$call), call_levels), d$expected_recall, na.last = TRUE)
+card_keys <- head(d$comparison[ord], params$max_cards)
+n_left_out <- nrow(d) - length(card_keys)
+```
+
+## Summary
+
+```{r summary-numbers, results = "asis"}
+n_cmp <- nrow(d)
+calls <- table(factor(as.character(d$call), levels = rev(call_levels)))
+cat(sprintf("**%d comparisons** were assessed across %d annotation level(s) (%s) and %d contrast(s).\n\n",
+            n_cmp, length(unique(d$annotation)), paste(unique(d$annotation), collapse = ", "),
+            length(unique(d$contrast))))
+cat(paste0("- **", names(calls), "**: ", as.integer(calls), " (", round(100 * as.integer(calls) / n_cmp), "%)",
+           collapse = "\n"), "\n\n")
+if (!is.null(settings) && isTRUE(settings$thetaReps == 0)) {
+    cat(paste0("*The depth / cell / donor variance attribution was not computed (`thetaReps = 0`, the fast ",
+               "default; the calls do not use it). Rerun `assessAll(..., thetaReps = 3)` to see whether more ",
+               "donors or more cells would help each comparison.*\n\n"))
+}
+cat(sprintf(paste0(
+    '<div style="border-left: 4px solid #FDAE61; padding: 0.5em 1em; background: #FFF8EE;">',
+    "<b>%d comparisons were assessed.</b> Report the full table, not only the comparisons that ",
+    "look interesting: selecting standouts after the fact inflates false positives.</div>\n\n"), n_cmp))
+```
+
+```{r summary-reasons}
+flagged <- d$flags[as.character(d$call) != "Adequate"]
+codes <- unlist(strsplit(flagged[nzchar(flagged)], ";"))
+if (length(codes)) {
+    labels <- c(underpowered = "underpowered at the target effect", few_testable = "too few testable genes",
+                composition = "subtype composition shift", imbalance = "cell-count imbalance",
+                confounded = "confounded with a covariate", too_few_samples = "too few samples per group",
+                not_estimable = "design not estimable")
+    tab <- sort(table(codes), decreasing = TRUE)
+    knitr::kable(data.frame(reason = unname(ifelse(names(tab) %in% names(labels), labels[names(tab)], names(tab))),
+                            comparisons = as.integer(tab)),
+                 caption = "Reasons behind the non-Adequate calls (a comparison can have several)")
+}
+```
+
+```{r settings}
+if (!is.null(settings)) {
+    st <- data.frame(setting = c("seny version", "DE method", "target |log2FC|", "power", "FDR",
+                                 "sample", "group", "covariates", "minCells", "theta reps"),
+                     value = c(settings$version, settings$method, settings$targetLFC, settings$power,
+                               settings$fdr, settings$sample, settings$group,
+                               if (length(settings$covariates)) paste(settings$covariates, collapse = ", ") else "none",
+                               settings$minCells, settings$thetaReps))
+    knitr::kable(st, caption = "Settings of this run")
+}
+```
+
+## Traffic-light matrices
+
+```{r matrix-size, include = FALSE}
+n_rows <- max(table(d$annotation[!duplicated(paste(d$annotation, d$cluster))]))
+h_matrix <- min(30, 1.5 + 0.25 * n_rows)
+```
+
+```{r matrices, fig.height = h_matrix}
+for (cur in plotAdequacy(res)) print(cur)
+```
+
+## Comparison table
+
+Every comparison, sortable and searchable. Rows with a card link to it.
+
+```{r table}
+cols <- intersect(c("annotation", "cluster", "contrast", "call", "expected_recall", "nA", "nB",
+                    "median_cells", "composition", "flags", "reason"), colnames(d))
+tab <- d[, cols]
+tab$expected_recall <- round(tab$expected_recall, 2)
+tab$card <- ifelse(d$comparison %in% card_keys,
+                   paste0('<a href="#', anchor(d$comparison), '">card</a>'), "")
+DT::formatStyle(
+    DT::datatable(tab, escape = setdiff(seq_along(tab), ncol(tab)), rownames = FALSE, filter = "top",
+                  extensions = "Buttons",
+                  options = list(dom = "Bfrtip", buttons = list("csv"), pageLength = 25, scrollX = TRUE)),
+    "call", backgroundColor = DT::styleEqual(names(call_colours), unname(call_colours)))
+```
+
+## Design and variance
+
+```{r design-plots, fig.height = 5}
+n_clusters <- length(unique(paste(d$annotation, d$cluster)))
+if (n_clusters <= 40) {
+    print(plotCells(res))
+} else {
+    cat("Cells per sample: not drawn for", n_clusters, "clusters; see the comparison cards.\n")
+}
+if (!is.null(settings) && length(settings$covariates)) print(plotConfounding(res))
+if (!is.null(settings) && isTRUE(settings$thetaReps > 0)) {
+    print(plotVariance(res))
+    print(plotRegime(res))
+}
+```
+
+## Composition
+
+```{r composition, results = "asis", fig.height = 4.5, fig.width = 10}
+comp_keys <- d$comparison[grepl("composition", d$flags)]
+if (all(d$composition %in% c("not assessed", NA))) {
+    cat("Composition was not assessed: it needs two nested annotation levels (e.g. broad and fine).\n")
+} else if (length(comp_keys) == 0) {
+    cat("No comparison has a composition Caution.\n")
+} else {
+    cat(length(comp_keys), "comparison(s) have a composition Caution: a subtype shift within the cluster",
+        "is expected to make genes look differentially expressed on its own.\n\n")
+    for (cur in head(comp_keys, params$max_cards)) {
+        cat("\n\n###", cur, "\n\n")
+        print(plotComposition(res, cur))
+    }
+}
+```
+
+## Comparison cards
+
+```{r cards, results = "asis", fig.height = 6, fig.width = 10}
+cat(sprintf("%d card(s), flagged comparisons first.", length(card_keys)))
+if (n_left_out > 0) {
+    cat(sprintf(" %d comparison(s) left out (`maxCards = %d`); every comparison is in the table above.",
+                n_left_out, params$max_cards))
+}
+cat("\n\n")
+for (cur in card_keys) {
+    row <- d[d$comparison == cur, ]
+    cat(sprintf('\n\n### %s : %s {#%s}\n\n**%s** --- %s\n\n', row$cluster, row$contrast, anchor(cur),
+                as.character(row$call), row$reason))
+    print(plotComparison(res, cur))
+}
+```
+
+## Appendix
+
+```{r thresholds}
+if (!is.null(settings)) {
+    th <- settings$thresholds
+    def <- defaultThresholds()
+    src <- seny:::threshold_sources()
+    knitr::kable(data.frame(threshold = names(th), value = vapply(th, format, character(1)),
+                            default = vapply(def[names(th)], format, character(1)),
+                            source = unname(src[names(th)])),
+                 caption = "Thresholds used and where each comes from")
+}
+```
+
+```{r session, comment = ""}
+utils::sessionInfo()
+```

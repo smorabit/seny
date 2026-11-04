@@ -21,7 +21,7 @@ assessAll(
   pi1 = "discoveries",
   alphaFixed = NULL,
   thresholds = defaultThresholds(),
-  thetaReps = 3,
+  thetaReps = 0,
   compReference = c("reference", "pooled"),
   BPPARAM = BiocParallel::SerialParam()
 )
@@ -80,9 +80,11 @@ estimation. Default \code{\link[BiocParallel:SerialParam]{BiocParallel::SerialPa
 }
 \value{
 A \link[S4Vectors:DataFrame]{S4Vectors::DataFrame}, one row per comparison, with the metrics,
-the \code{call} and a \code{reason}. The \code{\link[=pbSetup]{pbSetup()}} object is attached as
-\code{attr(, "pb")}, the per-gene table as \code{attr(, "pergene")} and the full
-\code{\link[=assessComposition]{assessComposition()}} result as \code{attr(, "composition")}. Composition beyond
+the \code{call}, a \code{reason} and \code{flags}. The \code{\link[=pbSetup]{pbSetup()}} object is attached as
+\code{attr(, "pb")}, the per-gene table as \code{attr(, "pergene")}, the full
+\code{\link[=assessComposition]{assessComposition()}} result as \code{attr(, "composition")} and the settings
+of the run (method, target, thresholds, seny version) as
+\code{attr(, "settings")}, which \code{\link[=reportSeny]{reportSeny()}} reads. Composition beyond
 the cluster share needs two nested annotation levels in \code{annotations}
 (e.g. broad and fine).
 }

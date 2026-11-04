@@ -10,7 +10,7 @@
 #' @examples
 #' sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
 #' res <- assessAll(sce, sample = "donor", group = "condition",
-#'                  annotations = "cell_type", targetLFC = 1, thetaReps = 1)
+#'                  annotations = "cell_type", targetLFC = 1, thetaReps = 3)
 #' plotVariance(res)
 #' @export
 #' @importFrom ggplot2 .data
@@ -21,7 +21,8 @@ plotVariance <- function(res) {
                 ' comparison(s) with no variance decomposition (voom method)')
         df <- df[!is.na(df$share_donor), , drop = FALSE]
     }
-    if (nrow(df) == 0) stop('no variance decomposition to plot', call. = FALSE)
+    if (nrow(df) == 0) stop('no variance decomposition to plot: run assessAll() with thetaReps = 3 ', 
+                             '(theta is off by default)', call. = FALSE)
     long <- do.call(rbind, lapply(c('depth', 'cell', 'donor'), function(t) {
         data.frame(annotation = df$annotation, cluster = df$cluster, term = t,
                    share = df[[paste0('share_', t)]], stringsAsFactors = FALSE)

@@ -29,21 +29,16 @@ plotComparison <- function(res, comparison) {
         ggplot2::annotate('text', x = 0, y = 0.15, hjust = 0, size = 3.2, colour = 'grey40',
             label = composition_text(row)) +
         ggplot2::xlim(0, 1) + ggplot2::ylim(0, 1.3)
-    panels <- patchwork::wrap_plots(comparison_donut(row), sens_one(res, comparison),
-                                    cells_one(res, row), nrow = 1)
+    # without theta (thetaReps = 0) there is no decomposition, so no donut
+    parts <- list(sens_one(res, comparison), cells_one(res, row))
+    if (!is.na(row$share_donor)) parts <- c(list(comparison_donut(row)), parts)
+    panels <- patchwork::wrap_plots(parts, nrow = 1)
     patchwork::wrap_plots(hdr, panels, ncol = 1, heights = c(0.28, 1))
 }
 
 #' Variance donut for one comparison
 #' @noRd
 comparison_donut <- function(row) {
-    if (is.na(row$share_donor)) {
-        return(ggplot2::ggplot() + ggplot2::theme_void() +
-            ggplot2::annotate('text', x = 0, y = 0, label = 'no NB\ndecomposition',
-                              size = 4, colour = 'grey50') +
-            ggplot2::labs(title = 'attribution') +
-            ggplot2::theme(plot.title = ggplot2::element_text(face = 'bold', hjust = 0.5)))
-    }
     sh <- data.frame(term = factor(c('depth', 'cell', 'donor'), levels = c('depth', 'cell', 'donor')),
                      share = c(row$share_depth, row$share_cell, row$share_donor))
     dom <- sh[which.max(sh$share), ]

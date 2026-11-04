@@ -20,7 +20,10 @@
 #'   (default) skips the composition columns and flag.
 #' @param thresholds A list from [defaultThresholds()].
 #' @return A [S4Vectors::DataFrame], one row per comparison, with all metrics,
-#'   the `call` and a `reason` string.
+#'   the `call`, a `reason` string and `flags`, the same flags as short codes
+#'   separated by `;` (`confounded`, `imbalance`, `composition`,
+#'   `few_testable`, `underpowered`, `too_few_samples`, `not_estimable`; empty
+#'   when adequate).
 #' @examples
 #' sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
 #' x <- pbSetup(sce, sample = "donor", group = "condition",
@@ -37,7 +40,7 @@ callComparisons <- function(design, pseudobulk, variance, sensitivity,
     if (!is.null(composition)) parts <- c(parts, list(as.data.frame(composition)))
     tab <- Reduce(function(a, b) merge(a, b, by = 'comparison', all = TRUE), parts)
     th <- utils::modifyList(defaultThresholds(), thresholds)
-    call <- character(nrow(tab)); reason <- character(nrow(tab))
+    call <- character(nrow(tab)); reason <- character(nrow(tab)); codes <- character(nrow(tab))
 
     for (i in seq_len(nrow(tab))) {
         r <- tab[i, ]
@@ -74,6 +77,11 @@ callComparisons <- function(design, pseudobulk, variance, sensitivity,
         if (too_few) flags <- c(flags, if (isTRUE(r$estimable)) 'too few samples per group'
                                        else 'design not estimable (rank-deficient or nested)')
 
+        codes[i] <- paste(c(if (confounded) 'confounded', if (imbalanced) 'imbalance',
+                            if (comp_shift) 'composition', if (few_testable) 'few_testable',
+                            if (underpowered) 'underpowered',
+                            if (too_few) (if (isTRUE(r$estimable)) 'too_few_samples' else 'not_estimable')),
+                          collapse = ';')
         call[i] <- if (too_few) 'Invalid'
                    else if (confounded || imbalance_caution || comp_shift) 'Caution'
                    else if (underpowered || few_testable) 'Underpowered'
@@ -82,5 +90,6 @@ callComparisons <- function(design, pseudobulk, variance, sensitivity,
     }
     tab$call <- factor(call, levels = c('Adequate', 'Underpowered', 'Caution', 'Invalid'))
     tab$reason <- reason
+    tab$flags <- codes
     S4Vectors::DataFrame(tab)
 }

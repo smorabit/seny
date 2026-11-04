@@ -13,7 +13,7 @@
 #' @examples
 #' sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
 #' res <- assessAll(sce, sample = "donor", group = "condition",
-#'                  annotations = "cell_type", targetLFC = 1, thetaReps = 1)
+#'                  annotations = "cell_type", targetLFC = 1, thetaReps = 3)
 #' plotRegime(res)
 #' @export
 #' @importFrom ggplot2 .data
@@ -25,7 +25,8 @@ plotRegime <- function(res) {
                 call. = FALSE)
         df <- df[!drop, , drop = FALSE]
     }
-    if (nrow(df) == 0) stop('no variance decomposition to plot', call. = FALSE)
+    if (nrow(df) == 0) stop('no variance decomposition to plot: run assessAll() with thetaReps = 3 ', 
+                             '(theta is off by default)', call. = FALSE)
 
     xy <- ternary_xy(df$share_depth, df$share_cell, df$share_donor)
     df$x <- xy$x; df$y <- xy$y

@@ -34,6 +34,10 @@ reference:
   - plotPower
   - plotComparison
   - plotComposition
+- title: Report
+  desc: Share the whole assessment as one HTML file.
+  contents:
+  - reportSeny
 
 articles:
 - title: Get started

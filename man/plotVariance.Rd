@@ -21,6 +21,6 @@ method have no negative-binomial decomposition and are dropped.
 \examples{
 sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
 res <- assessAll(sce, sample = "donor", group = "condition",
-                 annotations = "cell_type", targetLFC = 1, thetaReps = 1)
+                 annotations = "cell_type", targetLFC = 1, thetaReps = 3)
 plotVariance(res)
 }

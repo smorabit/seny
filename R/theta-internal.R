@@ -12,7 +12,7 @@
 #' Draw one small (donor-subsampled, cell-capped) matrix + donor factor. A
 #' seed makes the draw reproducible without touching the caller's RNG state
 #' @noRd
-draw_theta_sample <- function(counts, donor, max_cells = 50, max_donors = 50,
+draw_theta_sample <- function(counts, donor, max_cells = 50, max_donors = 20,
                               min_cells_gene = 20, seed = NULL) {
     draw <- function() {
         donor <- as.character(donor)
@@ -48,7 +48,7 @@ fit_theta <- function(sample) {
 #' saturates bandwidth and each one crawls.
 #' @noRd
 estimate_cell_theta <- function(counts, donor, n_rep = 3, max_cells = 50,
-                                max_donors = 50, min_cells_gene = 20, seed = 1) {
+                                max_donors = 20, min_cells_gene = 20, seed = 1) {
     reps <- lapply(seq_len(n_rep), function(r) {
         s <- draw_theta_sample(counts, donor, max_cells, max_donors,
                                min_cells_gene, seed = seed + r)
