@@ -47,6 +47,13 @@
 #'   `sensitivity_fraction`, `median_mde`,
 #'   `median_mde_fdr`, `median_mde_fixed` (`NA` without `alphaFixed`) and
 #'   `median_power`.
+#' @examples
+#' sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+#' x <- pbSetup(sce, sample = "donor", group = "condition",
+#'              annotations = "cell_type", thetaReps = 0)
+#' variance <- estimateVariance(x)
+#' sens <- estimateSensitivity(variance, targetLFC = 1)
+#' sens[, c("comparison", "expected_recall")]
 #' @export
 estimateSensitivity <- function(variance, targetLFC = 1, power = 0.8, fdr = 0.05,
                                 pi1 = 'discoveries', alphaFixed = NULL, calibrate = FALSE) {

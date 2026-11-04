@@ -3,7 +3,9 @@
 #' Merges the layer metrics into one tidy table, one row per comparison, and
 #' assigns each comparison a call: **Invalid** (the contrast is not estimable, or
 #' too few samples per group), **Caution** (estimable but the condition is
-#' confounded with a covariate, cell-count imbalance tracks the condition, or a
+#' confounded with a covariate, cell-count imbalance tracks the condition under
+#' DESeq2 (whose FDR control it breaks; with edgeR or voom the imbalance is
+#' reported in the reason but does not change the call), or a
 #' subtype shift within the cluster would by itself make enough genes look DE;
 #' see [assessComposition()]),
 #' **Underpowered** (valid but the expected recall at the target effect is below
@@ -19,6 +21,14 @@
 #' @param thresholds A list from [defaultThresholds()].
 #' @return A [S4Vectors::DataFrame], one row per comparison, with all metrics,
 #'   the `call` and a `reason` string.
+#' @examples
+#' sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+#' x <- pbSetup(sce, sample = "donor", group = "condition",
+#'              annotations = "cell_type", thetaReps = 0)
+#' variance <- estimateVariance(x)
+#' sens <- estimateSensitivity(variance, targetLFC = 1)
+#' res <- callComparisons(assessDesign(x), assessPseudobulk(x), variance$summary, sens)
+#' res[, c("comparison", "call", "reason")]
 #' @export
 #' @importFrom S4Vectors DataFrame
 callComparisons <- function(design, pseudobulk, variance, sensitivity,
@@ -36,6 +46,10 @@ callComparisons <- function(design, pseudobulk, variance, sensitivity,
                       (!is.na(r$max_vif) && r$max_vif >= th$vif)
         cells_cut <- cells_cond_cutoff(r$nA + r$nB, th$cellsCondCor, th$cellsCondAlpha)
         imbalanced <- !is.na(r$cells_cond_cor) && abs(r$cells_cond_cor) >= cells_cut
+        # imbalance breaks DESeq2's FDR control; edgeR and voom stay calibrated
+        # (threshold audit on E7), so for them it is reported, not a Caution
+        method <- if (is.null(r$method) || is.na(r$method)) NA_character_ else as.character(r$method)
+        imbalance_caution <- imbalanced && (is.na(method) || method == 'deseq2')
         few_testable <- !is.na(r$n_testable) && r$n_testable < th$minTestable
         underpowered <- !is.na(r$expected_recall) && r$expected_recall < th$sensitivity
         too_few <- is.na(r$estimable) || !r$estimable ||
@@ -46,8 +60,10 @@ callComparisons <- function(design, pseudobulk, variance, sensitivity,
 
         if (confounded) flags <- c(flags, sprintf('confounded (Cramer V %.2f, VIF %.1f)',
                                                   r$max_cramerV, r$max_vif))
-        if (imbalanced) flags <- c(flags, sprintf('cell-count imbalance correlated with condition (r %.2f, cutoff %.2f at %d samples; consider sample weights)',
-                                                  r$cells_cond_cor, cells_cut, r$nA + r$nB))
+        if (imbalanced) flags <- c(flags, sprintf('cell-count imbalance correlated with condition (r %.2f, cutoff %.2f at %d samples; %s)',
+                                                  r$cells_cond_cor, cells_cut, r$nA + r$nB,
+                                                  if (imbalance_caution) 'DESeq2 loses FDR control here; consider edgeR or voom'
+                                                  else 'reported only: edgeR and voom stay calibrated'))
         if (comp_shift) flags <- c(flags, sprintf('composition shift within the cluster (%s %.0f%% -> %.0f%%, FDR %.2g): ~%.0f genes (%.1f%%) expected to look DE from the shift alone',
                                                   r$comp_child, 100 * r$comp_share_A, 100 * r$comp_share_B,
                                                   r$comp_min_fdr, r$exp_comp_deg,
@@ -59,7 +75,7 @@ callComparisons <- function(design, pseudobulk, variance, sensitivity,
                                        else 'design not estimable (rank-deficient or nested)')
 
         call[i] <- if (too_few) 'Invalid'
-                   else if (confounded || imbalanced || comp_shift) 'Caution'
+                   else if (confounded || imbalance_caution || comp_shift) 'Caution'
                    else if (underpowered || few_testable) 'Underpowered'
                    else 'Adequate'
         reason[i] <- if (length(flags)) paste(flags, collapse = '; ') else 'adequate'

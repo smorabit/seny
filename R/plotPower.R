@@ -8,6 +8,11 @@
 #'   required).
 #' @param targets Numeric vector of target absolute log2 fold-changes to sweep.
 #' @return A `ggplot`, faceted by annotation set when there is more than one.
+#' @examples
+#' sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+#' res <- assessAll(sce, sample = "donor", group = "condition",
+#'                  annotations = "cell_type", targetLFC = 1, thetaReps = 0)
+#' plotPower(res)
 #' @export
 #' @importFrom ggplot2 .data
 plotPower <- function(res, targets = seq(0.25, 2, by = 0.05)) {

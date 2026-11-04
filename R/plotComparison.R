@@ -8,6 +8,11 @@
 #'   required).
 #' @param comparison A comparison key from `res$comparison`.
 #' @return A `patchwork` composition of `ggplot`s.
+#' @examples
+#' sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+#' res <- assessAll(sce, sample = "donor", group = "condition",
+#'                  annotations = "cell_type", targetLFC = 1, thetaReps = 0)
+#' plotComparison(res, "cell_type:CD4T:B_vs_A")
 #' @export
 #' @importFrom ggplot2 .data
 plotComparison <- function(res, comparison) {

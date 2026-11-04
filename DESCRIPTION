@@ -1,8 +1,9 @@
 Package: seny
 Title: Sanity Checks for Differential Expression in Noisy Data
-Version: 0.0.1
+Version: 0.99.0
 Authors@R:
-    person("Samuel", "Morabito", email = "sam.morabito@cnag.eu", role = c("aut", "cre"))
+    person("Samuel", "Morabito", email = "sam.morabito@cnag.eu", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-7768-4856"))
 Description: For every cluster-by-contrast comparison in a multi-sample
     single-cell dataset, seny assesses whether a pseudobulk differential
     expression test is Adequate, Underpowered, Caution or Invalid, and explains
@@ -18,9 +19,9 @@ URL: https://smorabit.github.io/seny/, https://github.com/smorabit/seny
 BugReports: https://github.com/smorabit/seny/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-biocViews: DifferentialExpression, SingleCell, QualityControl, Software
+biocViews: DifferentialExpression, GeneExpression, SingleCell, Transcriptomics, QualityControl, Software
 Depends:
-    R (>= 4.3)
+    R (>= 4.5.0)
 Imports:
     SummarizedExperiment,
     S4Vectors,
@@ -38,9 +39,12 @@ Imports:
     speckle,
     methods,
     stats,
-    utils
+    utils,
+    withr
 Suggests:
+    BiocStyle,
     SingleCellExperiment,
+    DelayedArray,
     testthat (>= 3.0.0),
     knitr,
     rmarkdown

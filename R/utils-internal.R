@@ -2,17 +2,61 @@
 # Internal helpers (not exported)
 #---------------------------------------------------------#
 
+#' Whether a count matrix is held in memory (base or Matrix); anything else
+#' (a DelayedMatrix, an HDF5-backed matrix) is read a block of cells at a time
+#' @noRd
+is_in_memory <- function(x) is.matrix(x) || methods::is(x, 'Matrix')
+
+#' Column indices in blocks of `getOption('seny.block_cells', 1e5)` cells
+#' @noRd
+col_blocks <- function(n) {
+    size <- getOption('seny.block_cells', 1e5)
+    split(seq_len(n), ceiling(seq_len(n) / size))
+}
+
+#' Columns `idx` of a count matrix, in memory (sparse when not already in memory)
+#' @noRd
+realise_block <- function(x, idx) {
+    b <- x[, idx, drop = FALSE]
+    if (is_in_memory(b)) b else methods::as(b, 'dgCMatrix')
+}
+
+#' Fail loudly unless every count is a non-negative integer (values, not type);
+#' out-of-memory matrices are checked a block of cells at a time
+#' @noRd
+check_counts <- function(counts) {
+    check <- function(m) {
+        v <- if (methods::is(m, 'dsparseMatrix')) m@x else m[m != 0]
+        if (any(v < 0)) stop('counts contain negative values')
+        if (any(v != round(v))) stop('counts are not integers; aggregate raw counts, never round')
+    }
+    if (is_in_memory(counts)) {
+        check(counts)
+    } else {
+        for (idx in col_blocks(ncol(counts))) check(realise_block(counts, idx))
+    }
+    invisible(TRUE)
+}
+
 #' Sum a genes x cells matrix into genes x groups
-#' @param counts genes x cells (sparse or dense)
+#' @param counts genes x cells (sparse, dense, or out of memory: summed a block
+#'   of cells at a time)
 #' @param grp grouping factor aligned to columns
 #' @return dense genes x groups matrix, columns named by group level
 #' @noRd
 pb_sum <- function(counts, grp) {
     g <- factor(as.character(grp))
     design <- Matrix::sparse.model.matrix(~ 0 + g)
-    pb <- counts %*% design
+    if (is_in_memory(counts)) {
+        pb <- as.matrix(counts %*% design)
+    } else {
+        pb <- matrix(0, nrow(counts), nlevels(g), dimnames = list(rownames(counts), NULL))
+        for (idx in col_blocks(ncol(counts))) {
+            pb <- pb + as.matrix(realise_block(counts, idx) %*% design[idx, , drop = FALSE])
+        }
+    }
     colnames(pb) <- levels(g)
-    as.matrix(pb)
+    pb
 }
 
 #' Subsample at most max_cells column indices per group

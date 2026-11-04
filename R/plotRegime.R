@@ -10,6 +10,11 @@
 #'   all annotation sets are pooled into one triangle; subset `res` first for a
 #'   single annotation.
 #' @return A `ggplot`.
+#' @examples
+#' sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+#' res <- assessAll(sce, sample = "donor", group = "condition",
+#'                  annotations = "cell_type", targetLFC = 1, thetaReps = 1)
+#' plotRegime(res)
 #' @export
 #' @importFrom ggplot2 .data
 plotRegime <- function(res) {

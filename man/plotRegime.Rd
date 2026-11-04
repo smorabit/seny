@@ -21,3 +21,9 @@ median detectable effect. Position shows where the noise is, size shows how hard
 detection is. The axes are gridded so the shares can be read off directly.
 Comparisons fit with the voom method have no decomposition and are dropped.
 }
+\examples{
+sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+res <- assessAll(sce, sample = "donor", group = "condition",
+                 annotations = "cell_type", targetLFC = 1, thetaReps = 1)
+plotRegime(res)
+}

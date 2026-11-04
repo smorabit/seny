@@ -73,3 +73,11 @@ power is evaluated at the threshold BH actually uses there. On OneK1K with 0.5-2
 of genes injected as DE and on male vs female it was the best calibrated of the
 rules tested (E4b).
 }
+\examples{
+sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+x <- pbSetup(sce, sample = "donor", group = "condition",
+             annotations = "cell_type", thetaReps = 0)
+variance <- estimateVariance(x)
+sens <- estimateSensitivity(variance, targetLFC = 1)
+sens[, c("comparison", "expected_recall")]
+}

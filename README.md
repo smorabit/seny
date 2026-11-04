@@ -11,7 +11,7 @@ are analytic and run on your own data — there is no per-dataset simulation.
 | Call | Meaning |
 | --- | --- |
 | **Invalid** | Type I error cannot be trusted (design not estimable, too few samples per group). |
-| **Caution** | Valid, but a risk applies (condition confounded with a covariate, or cell-count imbalance tracking the condition). |
+| **Caution** | Valid, but a risk applies (condition confounded with a covariate, cell-count imbalance tracking the condition under DESeq2, or a subtype shift inside the cluster). |
 | **Underpowered** | Valid but unable to detect the target effect (sensitivity too low, or too few testable genes). |
 | **Adequate** | No flags. |
 

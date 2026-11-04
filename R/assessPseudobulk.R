@@ -19,6 +19,11 @@
 #' @return A `data.frame`, one row per comparison, with `min_cells`,
 #'   `median_cells`, `gini_cells`, `frac_below_min`, `cells_ratio`,
 #'   `cells_cond_cor`, `libsize_cond_cor`, `n_testable` and `frac_testable`.
+#' @examples
+#' sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+#' x <- pbSetup(sce, sample = "donor", group = "condition",
+#'              annotations = "cell_type", thetaReps = 0)
+#' assessPseudobulk(x)[, c("comparison", "cells_cond_cor", "n_testable")]
 #' @export
 #' @importFrom edgeR DGEList filterByExpr
 assessPseudobulk <- function(x) {

@@ -30,3 +30,9 @@ The testable-gene count is the denominator for the sensitivity fraction in
 \code{\link[=estimateSensitivity]{estimateSensitivity()}}. Outlier-sample detection is part of layer 3, not
 here.
 }
+\examples{
+sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+x <- pbSetup(sce, sample = "donor", group = "condition",
+             annotations = "cell_type", thetaReps = 0)
+assessPseudobulk(x)[, c("comparison", "cells_cond_cor", "n_testable")]
+}

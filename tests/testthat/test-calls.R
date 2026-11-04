@@ -31,13 +31,17 @@ test_that('a partially confounded batch is Caution', {
     expect_true(all(as.character(res$call) == 'Caution'))
 })
 
-test_that('cell-count imbalance correlated with condition is Caution', {
+test_that('cell-count imbalance is Caution under DESeq2 and reported under edgeR', {
     sce <- sim_sce(n_per_group = 15, phi_donor = 0.01, theta = 0.2, n_genes = 200,
                    cells_per = 80, cells_imbalance = 0.2, seed = 7)
-    res <- assessAll(sce, sample = 'donor', group = 'condition',
-                     annotations = 'cell_type', targetLFC = 1)
-    expect_true(all(as.character(res$call) == 'Caution'))
-    expect_true(all(grepl('imbalance', res$reason)))
+    res_d <- assessAll(sce, sample = 'donor', group = 'condition',
+                       annotations = 'cell_type', targetLFC = 1, method = 'deseq2')
+    expect_true(all(as.character(res_d$call) == 'Caution'))
+    expect_true(all(grepl('imbalance.*DESeq2 loses FDR', res_d$reason)))
+    res_e <- assessAll(sce, sample = 'donor', group = 'condition',
+                       annotations = 'cell_type', targetLFC = 1)
+    expect_true(all(as.character(res_e$call) != 'Caution'))
+    expect_true(all(grepl('imbalance.*reported only', res_e$reason)))
 })
 
 test_that('too few testable genes is Underpowered', {

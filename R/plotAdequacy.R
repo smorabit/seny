@@ -10,6 +10,11 @@
 #'   `B` and `call`.
 #' @return A named list of `ggplot` objects, one per annotation set (a
 #'   single-level input returns a one-element list).
+#' @examples
+#' sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+#' res <- assessAll(sce, sample = "donor", group = "condition",
+#'                  annotations = "cell_type", targetLFC = 1, thetaReps = 0)
+#' plotAdequacy(res)
 #' @export
 #' @importFrom ggplot2 .data
 plotAdequacy <- function(res) {

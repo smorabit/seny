@@ -19,3 +19,9 @@ boxplot and faceted by cluster. When cell counts track the condition the
 pseudobulks are heteroscedastic, which is the risk behind a cell-count
 imbalance Caution.
 }
+\examples{
+sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+res <- assessAll(sce, sample = "donor", group = "condition",
+                 annotations = "cell_type", targetLFC = 1, thetaReps = 0)
+plotCells(res)
+}

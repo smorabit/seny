@@ -32,11 +32,11 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Samuel Morabito \email{sam.morabito@cnag.eu}
+\strong{Maintainer}: Samuel Morabito \email{sam.morabito@cnag.eu} (\href{https://orcid.org/0000-0002-7768-4856}{ORCID})
 
 Authors:
 \itemize{
-  \item Samuel Morabito \email{sam.morabito@cnag.eu}
+  \item Samuel Morabito \email{sam.morabito@cnag.eu} (\href{https://orcid.org/0000-0002-7768-4856}{ORCID})
 }
 
 }

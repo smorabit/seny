@@ -32,6 +32,12 @@
 #'   method's own p-values and log2 fold changes for the condition, `pvalue`
 #'   (behind the `pi1 = "discoveries"` mapping in [estimateSensitivity()]) and
 #'   `logfc` (behind the composition attribution in [assessComposition()])).
+#' @examples
+#' sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+#' x <- pbSetup(sce, sample = "donor", group = "condition",
+#'              annotations = "cell_type", thetaReps = 0)
+#' variance <- estimateVariance(x)
+#' variance$summary[, c("comparison", "method", "median_phi_total")]
 #' @export
 #' @importFrom edgeR DGEList filterByExpr calcNormFactors estimateDisp glmQLFit aveLogCPM cpm
 estimateVariance <- function(x, method = c('edgeR', 'deseq2', 'voom', 'dreamlet')) {

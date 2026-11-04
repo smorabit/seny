@@ -31,11 +31,22 @@ the \code{call} and a \code{reason} string.
 Merges the layer metrics into one tidy table, one row per comparison, and
 assigns each comparison a call: \strong{Invalid} (the contrast is not estimable, or
 too few samples per group), \strong{Caution} (estimable but the condition is
-confounded with a covariate, cell-count imbalance tracks the condition, or a
+confounded with a covariate, cell-count imbalance tracks the condition under
+DESeq2 (whose FDR control it breaks; with edgeR or voom the imbalance is
+reported in the reason but does not change the call), or a
 subtype shift within the cluster would by itself make enough genes look DE;
 see \code{\link[=assessComposition]{assessComposition()}}),
 \strong{Underpowered} (valid but the expected recall at the target effect is below
 \code{thresholds$sensitivity}, or too few testable genes), or \strong{Adequate}. Severity order is
 Invalid > Caution > Underpowered > Adequate; the \code{reason} column lists every
 flag so the single call never hides a second problem.
+}
+\examples{
+sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+x <- pbSetup(sce, sample = "donor", group = "condition",
+             annotations = "cell_type", thetaReps = 0)
+variance <- estimateVariance(x)
+sens <- estimateSensitivity(variance, targetLFC = 1)
+res <- callComparisons(assessDesign(x), assessPseudobulk(x), variance$summary, sens)
+res[, c("comparison", "call", "reason")]
 }

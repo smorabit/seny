@@ -26,3 +26,10 @@ of the cluster's own DE test against the change the subtype shift alone
 predicts. Genes the test calls DE are coloured by their attribution; genes on
 the diagonal are explained by composition.
 }
+\examples{
+sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+res <- assessAll(sce, sample = "donor", group = "condition",
+                 annotations = c("cell_type", "cell_type_fine"),
+                 targetLFC = 1, thetaReps = 0)
+plotComposition(res, "cell_type:CD4T:B_vs_A")
+}

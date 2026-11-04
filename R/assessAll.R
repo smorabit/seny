@@ -26,13 +26,13 @@
 #'   [assessComposition()] result as `attr(, "composition")`. Composition beyond
 #'   the cluster share needs two nested annotation levels in `annotations`
 #'   (e.g. broad and fine).
-#' @export
 #' @examples
-#' \dontrun{
+#' sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
 #' res <- assessAll(sce, sample = "donor", group = "condition",
-#'                  annotations = "cell_type")
+#'                  annotations = "cell_type", targetLFC = 1, thetaReps = 0)
 #' table(res$call)
-#' }
+#' res[, c("cluster", "call", "reason")]
+#' @export
 assessAll <- function(sce, sample, group, annotations, covariates = character(0),
                       contrasts = NULL, minCells = 10, aggregation = c('sum', 'mean'),
                       assayName = 'counts', method = c('edgeR', 'deseq2', 'voom'),

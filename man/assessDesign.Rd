@@ -23,3 +23,9 @@ standardised mean difference for numeric ones. A rank-deficient or fully
 nested design is flagged non-estimable, which downstream becomes an Invalid
 call.
 }
+\examples{
+sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+x <- pbSetup(sce, sample = "donor", group = "condition",
+             annotations = "cell_type", thetaReps = 0)
+assessDesign(x)
+}

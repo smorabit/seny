@@ -12,7 +12,11 @@
 #' later steps never need the single-cell object again.
 #'
 #' @param sce A [SingleCellExperiment::SingleCellExperiment] or
-#'   [SummarizedExperiment] with a raw-count assay (non-negative integers).
+#'   [SummarizedExperiment] with a raw-count assay (non-negative integers). The
+#'   assay may be a base or sparse matrix, or an out-of-memory matrix such as a
+#'   `DelayedMatrix` or an HDF5-backed matrix (for atlases beyond one sparse
+#'   matrix's 2^31 nonzeros): it is then checked and summed a block of cells at
+#'   a time (`options(seny.block_cells = ...)`, default 1e5).
 #' @param sample Character scalar; `colData` column giving the biological sample
 #'   (donor) each cell belongs to.
 #' @param group Character scalar; `colData` column giving the condition compared.
@@ -41,6 +45,12 @@
 #'
 #' @return A named [S4Vectors::SimpleList] of [SummarizedExperiment], one per
 #'   annotation level.
+#' @examples
+#' sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+#' x <- pbSetup(sce, sample = "donor", group = "condition",
+#'              annotations = "cell_type", thetaReps = 0)
+#' x
+#' names(x)
 #' @export
 #' @importFrom SummarizedExperiment SummarizedExperiment assay assayNames colData
 #' @importFrom S4Vectors SimpleList metadata metadata<-
@@ -62,9 +72,7 @@ pbSetup <- function(sce, sample, group, annotations, covariates = character(0),
         assayName <- SummarizedExperiment::assayNames(sce)[1]
     }
     counts <- SummarizedExperiment::assay(sce, assayName)
-    nzv <- if (methods::is(counts, 'sparseMatrix')) counts@x else counts[counts != 0]
-    if (any(nzv < 0)) stop('counts contain negative values')
-    if (any(nzv != round(nzv))) stop('counts are not integers; aggregate raw counts, never round')
+    check_counts(counts)
 
     group_vec <- as.character(cd[[group]])
     contrasts <- resolve_contrasts(group_vec, contrasts)

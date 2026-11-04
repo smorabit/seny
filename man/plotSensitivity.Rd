@@ -20,3 +20,9 @@ with the target effect drawn in and one panel per cluster. The share of genes
 below the line is the sensitivity fraction; genes above it are out of reach at
 the target.
 }
+\examples{
+sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+res <- assessAll(sce, sample = "donor", group = "condition",
+                 annotations = "cell_type", targetLFC = 1, thetaReps = 0)
+plotSensitivity(res)
+}

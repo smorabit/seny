@@ -36,3 +36,31 @@ test_that('frac_below_min catches samples dropped below minCells', {
     pb <- assessPseudobulk(x)
     expect_true(any(pb$frac_below_min > 0))
 })
+
+test_that('an out-of-memory count matrix gives the same result block by block', {
+    skip_if_not_installed('DelayedArray')
+    sce <- sim_sce(n_per_group = 6, n_genes = 120, cells_per = 40, seed = 11)
+    ref <- assessAll(sce, sample = 'donor', group = 'condition', annotations = 'cell_type',
+                     thetaReps = 1)
+    delayed <- sce
+    SummarizedExperiment::assay(delayed, 'counts') <-
+        DelayedArray::DelayedArray(SummarizedExperiment::assay(sce, 'counts'))
+    old <- options(seny.block_cells = 50)
+    on.exit(options(old))
+    res <- assessAll(delayed, sample = 'donor', group = 'condition', annotations = 'cell_type',
+                     thetaReps = 1)
+    expect_equal(as.data.frame(res), as.data.frame(ref), ignore_attr = TRUE)
+    expect_equal(SummarizedExperiment::assay(attr(res, 'pb')[[1]], 'counts'),
+                 SummarizedExperiment::assay(attr(ref, 'pb')[[1]], 'counts'))
+})
+
+test_that('non-integer counts fail loudly in every block', {
+    skip_if_not_installed('DelayedArray')
+    sce <- sim_sce(n_per_group = 3, n_genes = 50, cells_per = 20, seed = 12)
+    m <- as.matrix(SummarizedExperiment::assay(sce, 'counts'))
+    m[1, ncol(m)] <- 0.5
+    SummarizedExperiment::assay(sce, 'counts') <- DelayedArray::DelayedArray(m)
+    old <- options(seny.block_cells = 10)
+    on.exit(options(old))
+    expect_error(pbSetup(sce, 'donor', 'condition', 'cell_type', thetaReps = 0), 'not integers')
+})

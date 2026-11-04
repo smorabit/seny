@@ -21,3 +21,9 @@ covariates, with the Caution threshold drawn in and points coloured by the
 call. A comparison past the line cannot cleanly separate the condition from the
 covariate.
 }
+\examples{
+sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+res <- assessAll(sce, sample = "donor", group = "condition",
+                 annotations = "cell_type", targetLFC = 1, thetaReps = 0)
+plotConfounding(res)
+}

@@ -1,9 +1,13 @@
 ---
 title: "Assessing pseudobulk DE adequacy with seny"
+author:
+  - name: Samuel Morabito
+    affiliation: Centre Nacional d'Anàlisi Genòmica (CNAG)
+    email: sam.morabito@cnag.eu
+package: seny
 output:
-  rmarkdown::html_document:
-    toc: true
-    toc_depth: 2
+  BiocStyle::html_document:
+    toc_float: true
 vignette: >
   %\VignetteIndexEntry{Assessing pseudobulk DE adequacy with seny}
   %\VignetteEngine{knitr::rmarkdown}
@@ -12,6 +16,18 @@ vignette: >
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 5, fig.height = 4)
+library(BiocStyle)
+```
+
+## Installation
+
+`seny` is a Bioconductor package; install it with `r Biocpkg("BiocManager")`:
+
+```{r install, eval = FALSE}
+if (!requireNamespace("BiocManager", quietly = TRUE)) {
+    install.packages("BiocManager")
+}
+BiocManager::install("seny")
 ```
 
 ## What seny does
@@ -19,7 +35,10 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 5, fig.height
 For every cluster-by-contrast comparison in a multi-sample single-cell dataset,
 `seny` decides whether a pseudobulk differential-expression test is **Adequate**,
 **Underpowered**, **Caution** or **Invalid**, and explains why. The diagnostics
-are analytic and run on your own data; there is no per-dataset simulation.
+are analytic and run on your own data; there is no per-dataset simulation. The
+variance model and power follow the DE method you intend to run:
+`r Biocpkg("edgeR")` (default), `r Biocpkg("DESeq2")` or `r Biocpkg("limma")`
+voom.
 
 The call has a severity order --- Invalid > Caution > Underpowered > Adequate ---
 and a `reason` string that lists *every* flag, so a single headline never hides a
@@ -28,7 +47,7 @@ second problem:
 | Call | Meaning |
 | --- | --- |
 | **Invalid** | Type I error cannot be trusted (design not estimable, too few samples per group). |
-| **Caution** | Valid, but a specific risk applies (condition confounded with a covariate, cell-count imbalance tracking the condition, or a subtype shift inside the cluster that would make genes look DE on its own). |
+| **Caution** | Valid, but a specific risk applies (condition confounded with a covariate, cell-count imbalance tracking the condition under DESeq2, or a subtype shift inside the cluster that would make genes look DE on its own). |
 | **Underpowered** | Valid but unable to detect the target effect (sensitivity too low, or too few testable genes). |
 | **Adequate** | No flags. |
 
@@ -78,11 +97,20 @@ for (i in seq_len(nrow(d))) {
 }
 ```
 
-Here CD4 T is clean (**Adequate**); CD8 T has far fewer cells in condition B, so
-its cell-count imbalance tracks the condition and breaks the equal-variance
-assumption (**Caution** --- consider voom `sampleWeights` or dreamlet precision
-weights); NK has high between-donor variance at a modest cell count, so few
-genes are detectable at the target effect (**Underpowered**).
+Here CD4 T is clean (**Adequate**). CD8 T has far fewer cells in condition B, so
+its cell-count imbalance tracks the condition; seny reports it in the reason, but
+the call stays **Adequate** because edgeR and voom remain calibrated under
+imbalance. DESeq2 loses FDR control there, so with `method = "deseq2"` the same
+comparison is **Caution**:
+
+```{r deseq2}
+res_d <- assessAll(sce, sample = "donor", group = "condition",
+                   annotations = "cell_type", targetLFC = 1, method = "deseq2")
+as.character(res_d$call[res_d$cluster == "CD8T"])
+```
+
+NK has high between-donor variance at a modest cell count, so few genes are
+detectable at the target effect (**Underpowered**).
 
 ## The traffic-light matrix
 
@@ -137,7 +165,8 @@ table(sce$cell_type_fine, sce$condition)
 Give `assessAll()` both annotation levels. `seny` works out which level nests in
 which from the cells, and for each broad cluster:
 
-- tests the subtypes' shares of the cluster with `speckle::propeller`;
+- tests the subtypes' shares of the cluster with propeller from
+  `r Biocpkg("speckle")`;
 - predicts, per gene, the log2 fold change the observed shift alone would cause,
   and the power to call it DE, which sums to the number of DEGs expected from
   composition alone;

@@ -8,6 +8,11 @@
 #' @param res The result of [assessAll()] (its `pb` setup object is required).
 #' @return A `ggplot`, faceted by cluster (and annotation set when there is more
 #'   than one).
+#' @examples
+#' sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+#' res <- assessAll(sce, sample = "donor", group = "condition",
+#'                  annotations = "cell_type", targetLFC = 1, thetaReps = 0)
+#' plotCells(res)
 #' @export
 #' @importFrom ggplot2 .data
 plotCells <- function(res) {

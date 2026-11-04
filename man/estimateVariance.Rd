@@ -45,3 +45,10 @@ run. \code{edgeR} and \code{deseq2} require sum aggregation (integer counts); \c
 works on either sum (voom) or mean (limma-trend) pseudobulks. \code{dreamlet} is
 reserved for mixed designs and is not yet implemented.
 }
+\examples{
+sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+x <- pbSetup(sce, sample = "donor", group = "condition",
+             annotations = "cell_type", thetaReps = 0)
+variance <- estimateVariance(x)
+variance$summary[, c("comparison", "method", "median_phi_total")]
+}

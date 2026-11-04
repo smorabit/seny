@@ -12,6 +12,11 @@
 #' @return A `data.frame`, one row per comparison, with design and confounding
 #'   metrics (`estimable`, `resid_df`, `nA`, `nB`, `max_vif`, `max_cramerV`,
 #'   `max_smd`).
+#' @examples
+#' sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+#' x <- pbSetup(sce, sample = "donor", group = "condition",
+#'              annotations = "cell_type", thetaReps = 0)
+#' assessDesign(x)
 #' @export
 assessDesign <- function(x) {
     do.call(rbind, lapply(x, function(se) {

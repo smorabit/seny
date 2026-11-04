@@ -20,3 +20,9 @@ Assembles one comparison into a single card: the call and its reason, the
 variance attribution as a donut, the sensitivity curve, and cells per sample.
 This is the per-comparison unit behind the eventual report.
 }
+\examples{
+sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+res <- assessAll(sce, sample = "donor", group = "condition",
+                 annotations = "cell_type", targetLFC = 1, thetaReps = 0)
+plotComparison(res, "cell_type:CD4T:B_vs_A")
+}

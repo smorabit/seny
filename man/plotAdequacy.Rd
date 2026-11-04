@@ -21,3 +21,9 @@ clusters-by-contrasts grid, one plot per annotation set, each tile coloured by
 the comparison's call (Adequate / Underpowered / Caution / Invalid). The call
 reasons stay in the table; the matrix is the at-a-glance view.
 }
+\examples{
+sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+res <- assessAll(sce, sample = "donor", group = "condition",
+                 annotations = "cell_type", targetLFC = 1, thetaReps = 0)
+plotAdequacy(res)
+}

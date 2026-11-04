@@ -60,6 +60,14 @@
 #'   `lfc_comp`, `comp_power`, `mde`, `sensitive`, the observed `logfc`, `padj`, `parent_de`,
 #'   `child_de` and the attribution `label`) and `proportions` (per sample and
 #'   child, the child's share of the parent).
+#' @examples
+#' sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+#' x <- pbSetup(sce, sample = "donor", group = "condition",
+#'              annotations = c("cell_type", "cell_type_fine"), thetaReps = 0)
+#' variance <- estimateVariance(x)
+#' sens <- estimateSensitivity(variance, targetLFC = 1)
+#' comp <- assessComposition(x, variance, sens)
+#' comp$summary[, c("comparison", "composition", "comp_child", "exp_comp_deg")]
 #' @export
 assessComposition <- function(x, variance, sensitivity, power = 0.8, fdr = 0.05,
                               reference = c('reference', 'pooled'),
@@ -184,29 +192,54 @@ parent_composition <- function(se, child_se, hier, ann, child_ann, cl, A, B, key
                               child = rep(rownames(m), ncol(m)), nCells = as.vector(m),
                               share = as.vector(prop), stringsAsFactors = FALSE)
 
-    # part 3: the shift-only log2 fold change, each gene's power to be called DE at
-    # it, and the genes whose MDE it clears
     g <- fit$genes
-    expr <- child_expression(S4Vectors::metadata(child_se)$cluster_totals, rownames(m), g,
-                             A, reference)
+    pred <- shift_only_change(child_se, rownames(m), g, A, reference, p_a, p_b, fit, alpha, power)
+    att <- attribute_degs(g, fit, pred$lfc_comp, child_ann, rownames(m), A, B, pergene, fdr, th)
+
+    top <- if (is.null(shift)) NULL else shift[which.min(shift$fdr), ]
+    n_deg <- sum(att$parent_de)
+    n_comp <- sum(att$label == 'composition-driven', na.rm = TRUE)
+    summary <- list(
+        comp_child = if (is.null(top)) NA_character_ else top$cluster,
+        comp_share_A = if (is.null(top)) NA_real_ else top$share_A,
+        comp_share_B = if (is.null(top)) NA_real_ else top$share_B,
+        comp_min_fdr = if (is.null(top)) NA_real_ else top$fdr,
+        exp_comp_deg = sum(pred$comp_power), frac_comp_expected = mean(pred$comp_power),
+        n_comp_sensitive = sum(pred$sensitive), frac_comp_sensitive = mean(pred$sensitive),
+        n_parent_deg = n_deg, n_comp_driven = n_comp,
+        frac_comp_driven = if (n_deg > 0) n_comp / n_deg else NA_real_)
+    genes <- data.frame(comparison = key, gene = g, pred, att, stringsAsFactors = FALSE)
+    list(status = 'assessed', summary = summary, genes = genes, proportions = proportions)
+}
+
+#' Part 3: the shift-only log2 fold change per gene, the power to call DE at it,
+#' and whether it clears the gene's MDE
+#' @noRd
+shift_only_change <- function(child_se, children, g, A, reference, p_a, p_b, fit, alpha, power) {
+    expr <- child_expression(S4Vectors::metadata(child_se)$cluster_totals, children, g, A, reference)
     mix <- function(p) as.vector(expr$c %*% p[colnames(expr$c)]) / sum(p[colnames(expr$c)] * expr$L)
     lfc_comp <- log2(mix(p_b)) - log2(mix(p_a))
     lfc_comp[!is.finite(lfc_comp)] <- NA
-    mde <- if (is.na(alpha)) rep(NA_real_, length(g)) else mde_from_se(fit$se_log2, fit$df, alpha, power)
-    sensitive <- !is.na(lfc_comp) & !is.na(mde) & abs(lfc_comp) > mde
-    comp_power <- if (is.na(alpha)) rep(NA_real_, length(g))
+    no_alpha <- rep(NA_real_, length(g))
+    mde <- if (is.na(alpha)) no_alpha else mde_from_se(fit$se_log2, fit$df, alpha, power)
+    comp_power <- if (is.na(alpha)) no_alpha
                   else power_from_se(fit$se_log2, fit$df, abs(ifelse(is.na(lfc_comp), 0, lfc_comp)), alpha)
+    data.frame(lfc_comp = lfc_comp, comp_power = comp_power, mde = mde,
+               sensitive = !is.na(lfc_comp) & !is.na(mde) & abs(lfc_comp) > mde)
+}
 
-    # part 4: attribution of the parent's own DEGs
+#' Part 4: attribution of the parent's own DEGs (the method's test at `fdr`)
+#' against the shift-only change and the child comparisons
+#' @noRd
+attribute_degs <- function(g, fit, lfc_comp, child_ann, children, A, B, pergene, fdr, th) {
     logfc <- if (is.null(fit$logfc)) rep(NA_real_, length(g)) else unname(fit$logfc[g])
     padj <- if (is.null(fit$pvalue)) rep(NA_real_, length(g)) else stats::p.adjust(unname(fit$pvalue[g]), 'BH')
     parent_de <- !is.na(padj) & padj < fdr
-    child_keys <- paste0(child_ann, ':', rownames(m), ':', B, '_vs_', A)
+    child_keys <- paste0(child_ann, ':', children, ':', B, '_vs_', A)
     child_fits <- Filter(function(f) !is.null(f) && !is.null(f$pvalue), pergene[child_keys])
     child_de <- rep(FALSE, length(g))
     for (f in child_fits) {
-        de_k <- stats::p.adjust(f$pvalue, 'BH') < fdr
-        hit <- de_k[g]
+        hit <- (stats::p.adjust(f$pvalue, 'BH') < fdr)[g]
         child_de <- child_de | (!is.na(hit) & hit)
     }
     explained <- !is.na(lfc_comp) & !is.na(logfc) & sign(lfc_comp) == sign(logfc) &
@@ -216,24 +249,8 @@ parent_composition <- function(se, child_se, hier, ann, child_ann, cl, A, B, key
                   ifelse(child_de, 'within-child DE',
                   ifelse(explained, 'composition-driven', 'unresolved')))
     label[!parent_de] <- NA_character_
-
-    top <- if (is.null(shift)) NULL else shift[which.min(shift$fdr), ]
-    n_deg <- sum(parent_de)
-    n_comp <- sum(label == 'composition-driven', na.rm = TRUE)
-    summary <- list(
-        comp_child = if (is.null(top)) NA_character_ else top$cluster,
-        comp_share_A = if (is.null(top)) NA_real_ else top$share_A,
-        comp_share_B = if (is.null(top)) NA_real_ else top$share_B,
-        comp_min_fdr = if (is.null(top)) NA_real_ else top$fdr,
-        exp_comp_deg = sum(comp_power), frac_comp_expected = mean(comp_power),
-        n_comp_sensitive = sum(sensitive), frac_comp_sensitive = mean(sensitive),
-        n_parent_deg = n_deg, n_comp_driven = n_comp,
-        frac_comp_driven = if (n_deg > 0) n_comp / n_deg else NA_real_)
-    genes <- data.frame(comparison = key, gene = g, lfc_comp = lfc_comp, comp_power = comp_power, mde = mde,
-                        sensitive = sensitive, logfc = logfc, padj = padj,
-                        parent_de = parent_de, child_de = child_de, label = label,
-                        stringsAsFactors = FALSE)
-    list(status = 'assessed', summary = summary, genes = genes, proportions = proportions)
+    data.frame(logfc = logfc, padj = padj, parent_de = parent_de, child_de = child_de, label = label,
+               stringsAsFactors = FALSE)
 }
 
 #' Per-cell mean count of each gene in each child (`c`, genes x children) and the

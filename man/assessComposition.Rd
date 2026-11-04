@@ -88,3 +88,12 @@ child comparison could be fitted).
 Clusters without a finer annotation nested in them get
 \code{composition = "not assessed"}; parts 2-4 need two annotation levels.
 }
+\examples{
+sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+x <- pbSetup(sce, sample = "donor", group = "condition",
+             annotations = c("cell_type", "cell_type_fine"), thetaReps = 0)
+variance <- estimateVariance(x)
+sens <- estimateSensitivity(variance, targetLFC = 1)
+comp <- assessComposition(x, variance, sens)
+comp$summary[, c("comparison", "composition", "comp_child", "exp_comp_deg")]
+}

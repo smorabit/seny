@@ -23,7 +23,11 @@ pbSetup(
 }
 \arguments{
 \item{sce}{A \link[SingleCellExperiment:SingleCellExperiment]{SingleCellExperiment::SingleCellExperiment} or
-\link[SummarizedExperiment:SummarizedExperiment]{SummarizedExperiment} with a raw-count assay (non-negative integers).}
+\link[SummarizedExperiment:SummarizedExperiment]{SummarizedExperiment} with a raw-count assay (non-negative integers). The
+assay may be a base or sparse matrix, or an out-of-memory matrix such as a
+\code{DelayedMatrix} or an HDF5-backed matrix (for atlases beyond one sparse
+matrix's 2^31 nonzeros): it is then checked and summed a block of cells at
+a time (\code{options(seny.block_cells = ...)}, default 1e5).}
 
 \item{sample}{Character scalar; \code{colData} column giving the biological sample
 (donor) each cell belongs to.}
@@ -77,4 +81,11 @@ names and per-cluster cell-level overdispersion (\code{theta}) in \code{metadata
 Cell-level \code{theta} (within-donor cell-to-cell overdispersion, needed by
 \code{\link[=estimateVariance]{estimateVariance()}}) is estimated here, while the cells are in hand, so the
 later steps never need the single-cell object again.
+}
+\examples{
+sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+x <- pbSetup(sce, sample = "donor", group = "condition",
+             annotations = "cell_type", thetaReps = 0)
+x
+names(x)
 }

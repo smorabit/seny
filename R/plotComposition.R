@@ -13,6 +13,12 @@
 #' @param nLabel Number of composition-driven genes to label, largest observed
 #'   change first. Default 10.
 #' @return A `patchwork` of two `ggplot`s.
+#' @examples
+#' sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+#' res <- assessAll(sce, sample = "donor", group = "condition",
+#'                  annotations = c("cell_type", "cell_type_fine"),
+#'                  targetLFC = 1, thetaReps = 0)
+#' plotComposition(res, "cell_type:CD4T:B_vs_A")
 #' @export
 #' @importFrom ggplot2 .data
 plotComposition <- function(res, comparison, nLabel = 10) {

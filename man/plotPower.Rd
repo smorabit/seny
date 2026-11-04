@@ -20,3 +20,9 @@ Mean power across a sweep of target log2 fold-changes, one line per cluster,
 with the 0.8 reference. Shows where the call would change at a smaller or larger
 target effect.
 }
+\examples{
+sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+res <- assessAll(sce, sample = "donor", group = "condition",
+                 annotations = "cell_type", targetLFC = 1, thetaReps = 0)
+plotPower(res)
+}

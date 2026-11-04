@@ -9,22 +9,25 @@
 # (theta_g is shared across donors, so the subsample estimates it just as well).
 #---------------------------------------------------------#
 
-#' Draw one small (donor-subsampled, cell-capped) matrix + donor factor
+#' Draw one small (donor-subsampled, cell-capped) matrix + donor factor. A
+#' seed makes the draw reproducible without touching the caller's RNG state
 #' @noRd
 draw_theta_sample <- function(counts, donor, max_cells = 50, max_donors = 50,
                               min_cells_gene = 20, seed = NULL) {
-    if (!is.null(seed)) set.seed(seed)
-    donor <- as.character(donor)
-    ud <- unique(donor)
-    if (length(ud) > max_donors) {
-        sel <- donor %in% sample(ud, max_donors)
-        counts <- counts[, sel]
-        donor <- donor[sel]
+    draw <- function() {
+        donor <- as.character(donor)
+        ud <- unique(donor)
+        if (length(ud) > max_donors) {
+            sel <- donor %in% sample(ud, max_donors)
+            counts <- counts[, sel]
+            donor <- donor[sel]
+        }
+        sub <- cap_cells(donor, max_cells)
+        mat <- realise_block(counts, sub)
+        keep <- Matrix::rowSums(mat > 0) >= min_cells_gene
+        list(mat = mat[keep, ], d = droplevels(factor(donor[sub])))
     }
-    sub <- cap_cells(donor, max_cells)
-    mat <- counts[, sub]
-    keep <- Matrix::rowSums(mat > 0) >= min_cells_gene
-    list(mat = mat[keep, ], d = droplevels(factor(donor[sub])))
+    if (is.null(seed)) draw() else withr::with_seed(seed, draw())
 }
 
 #' Fit theta_g (unshrunk overdispersion) on one prepared sample
