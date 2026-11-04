@@ -68,8 +68,8 @@ names and per-cluster cell-level overdispersion (<code>theta</code>) in <code>me
 <span>  aggregation <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sum"</span>, <span class="st">"mean"</span><span class="op">)</span>,</span>
 <span>  assayName <span class="op">=</span> <span class="st">"counts"</span>,</span>
 <span>  thetaCells <span class="op">=</span> <span class="fl">50</span>,</span>
-<span>  thetaDonors <span class="op">=</span> <span class="fl">50</span>,</span>
-<span>  thetaReps <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  thetaDonors <span class="op">=</span> <span class="fl">20</span>,</span>
+<span>  thetaReps <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  BPPARAM <span class="op">=</span> <span class="fu">BiocParallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/BiocParallel/man/SerialParam-class.html" class="external-link">SerialParam</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -133,11 +133,16 @@ dropped. Default 10.</p></dd>
 
 <dt id="arg-thetacells-thetadonors-thetareps">thetaCells, thetaDonors, thetaReps<a class="anchor" aria-label="anchor" href="#arg-thetacells-thetadonors-thetareps"></a></dt>
 <dd><p>Subsample size (cells per donor,
-donors) and number of draws for the cell-level <code>theta</code> ensemble.
-<code>thetaReps = 0</code> skips the theta fit (by far the slowest step): the
-adequacy call is unchanged, since the sensitivity uses the total
-pseudobulk dispersion, but the depth/cell/donor variance decomposition
-from <code><a href="estimateVariance.html">estimateVariance()</a></code> is then <code>NA</code>.</p></dd>
+donors) and number of draws for the cell-level <code>theta</code> ensemble. The
+default of 20 donors per draw gives the same variance shares and regime
+as 50, about 5 times faster (each draw's Cox-Reid-adjusted fit grows
+steeply with the number of donors).
+The default <code>thetaReps = 0</code> skips the theta fit, the slowest step (about
+45 s per cluster with 3 reps): the adequacy call is the same either way,
+since power uses the total pseudobulk dispersion, but the depth/cell/donor
+variance decomposition from <code><a href="estimateVariance.html">estimateVariance()</a></code> (shares, regime,
+<code><a href="plotVariance.html">plotVariance()</a></code>, <code><a href="plotRegime.html">plotRegime()</a></code>) needs theta. Use <code>thetaReps = 3</code> to get
+it, i.e. to see whether more donors or more cells would help.</p></dd>
 
 
 <dt id="arg-bpparam">BPPARAM<a class="anchor" aria-label="anchor" href="#arg-bpparam"></a></dt>

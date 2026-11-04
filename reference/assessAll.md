@@ -36,7 +36,7 @@ assessAll(
   pi1 = "discoveries",
   alphaFixed = NULL,
   thresholds = defaultThresholds(),
-  thetaReps = 3,
+  thetaReps = 0,
   compReference = c("reference", "pooled"),
   BPPARAM = BiocParallel::SerialParam()
 )
@@ -139,14 +139,17 @@ assessAll(
 
 A
 [S4Vectors::DataFrame](https://rdrr.io/pkg/S4Vectors/man/DataFrame-class.html),
-one row per comparison, with the metrics, the `call` and a `reason`. The
+one row per comparison, with the metrics, the `call`, a `reason` and
+`flags`. The
 [`pbSetup()`](https://smorabit.github.io/seny/reference/pbSetup.md)
 object is attached as `attr(, "pb")`, the per-gene table as
-`attr(, "pergene")` and the full
+`attr(, "pergene")`, the full
 [`assessComposition()`](https://smorabit.github.io/seny/reference/assessComposition.md)
-result as `attr(, "composition")`. Composition beyond the cluster share
-needs two nested annotation levels in `annotations` (e.g. broad and
-fine).
+result as `attr(, "composition")` and the settings of the run (method,
+target, thresholds, seny version) as `attr(, "settings")`, which
+[`reportSeny()`](https://smorabit.github.io/seny/reference/reportSeny.md)
+reads. Composition beyond the cluster share needs two nested annotation
+levels in `annotations` (e.g. broad and fine).
 
 ## Examples
 

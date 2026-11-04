@@ -33,7 +33,7 @@ A `ggplot`.
 ``` r
 sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
 res <- assessAll(sce, sample = "donor", group = "condition",
-                 annotations = "cell_type", targetLFC = 1, thetaReps = 1)
+                 annotations = "cell_type", targetLFC = 1, thetaReps = 3)
 #> calcNormFactors has been renamed to normLibSizes
 #> calcNormFactors has been renamed to normLibSizes
 #> calcNormFactors has been renamed to normLibSizes

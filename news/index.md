@@ -19,3 +19,13 @@ First Bioconductor submission.
   the comparison card
   ([`plotComparison()`](https://smorabit.github.io/seny/reference/plotComparison.md))
   and the `plotX()` family.
+- The cell-level theta fit, which only feeds the depth / cell / donor
+  variance attribution, is off by default (`thetaReps = 0`); the calls
+  do not use it. Use `thetaReps = 3` for the attribution (20 donors per
+  draw).
+- [`reportSeny()`](https://smorabit.github.io/seny/reference/reportSeny.md)
+  writes a self-contained HTML report (an R Markdown template, editable
+  via
+  [`rmarkdown::draft()`](https://pkgs.rstudio.com/rmarkdown/reference/draft.html)):
+  summary, matrices, a sortable table of every comparison, composition
+  and per-comparison cards.

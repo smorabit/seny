@@ -145,9 +145,18 @@ shows where each comparison’s noise comes from — the depth, cell and
 donor shares of the per-sample variance. A donor-dominated bar means
 only more donors will help.
 
+This attribution needs the cell-level overdispersion `theta`, fitted
+from the single cells. It is off by default because it is the slowest
+step and the calls do not use it; ask for it with `thetaReps = 3`:
+
 ``` r
 
-plotVariance(res)
+res_theta <- assessAll(sce, sample = "donor", group = "condition",
+                       annotations = "cell_type", targetLFC = 1, thetaReps = 3)
+#> calcNormFactors has been renamed to normLibSizes
+#> calcNormFactors has been renamed to normLibSizes
+#> calcNormFactors has been renamed to normLibSizes
+plotVariance(res_theta)
 ```
 
 ![Variance attribution bars](seny_files/figure-html/variance-1.png)
@@ -159,7 +168,7 @@ is, size shows how hard detection is.
 
 ``` r
 
-plotRegime(res)
+plotRegime(res_theta)
 ```
 
 ![Variance regime ternary](seny_files/figure-html/regime-1.png)
@@ -170,7 +179,7 @@ donut, the sensitivity curve and the cells per sample — into one card.
 
 ``` r
 
-plotComparison(res, "cell_type:NK:B_vs_A")
+plotComparison(res_theta, "cell_type:NK:B_vs_A")
 ```
 
 ![Comparison card for one comparison](seny_files/figure-html/card-1.png)
@@ -270,6 +279,24 @@ share differs between conditions is reported (`share_A`, `share_B`,
 `share_fdr`) but not flagged, since that alone does not bias DE within
 it. With a single annotation level the composition is `"not assessed"`.
 
+## Sharing the results
+
+[`reportSeny()`](https://smorabit.github.io/seny/reference/reportSeny.md)
+writes the whole assessment to one self-contained HTML file: a summary
+of the calls and their reasons, the traffic-light matrices, a sortable
+table of every comparison, the composition flags and a card per
+comparison (flagged ones first, up to `maxCards`). It needs pandoc,
+which ships with RStudio.
+
+``` r
+
+reportSeny(res2, file = "seny_report.html")
+```
+
+For an editable version,
+`rmarkdown::draft("my_report.Rmd", template = "seny_report", package = "seny")`
+copies the template.
+
 ## Thresholds and honest reporting
 
 The numeric cut-offs that drive the call live in
@@ -332,8 +359,8 @@ sessionInfo()
 #>   [5] spatstat.utils_3.2-5        farver_2.1.2               
 #>   [7] rmarkdown_2.32              fs_2.1.0                   
 #>   [9] ragg_1.5.2                  vctrs_0.7.3                
-#>  [11] ROCR_1.0-12                 spatstat.explore_3.8-3     
-#>  [13] DelayedMatrixStats_1.34.0   htmltools_0.5.9            
+#>  [11] ROCR_1.0-12                 DelayedMatrixStats_1.34.0  
+#>  [13] spatstat.explore_3.8-3      htmltools_0.5.9            
 #>  [15] S4Arrays_1.12.1             SparseArray_1.12.3         
 #>  [17] sass_0.4.10                 sctransform_0.4.3          
 #>  [19] parallelly_1.50.0           KernSmooth_2.23-27         
@@ -367,13 +394,13 @@ sessionInfo()
 #>  [75] nlme_3.1-171                promises_1.5.0             
 #>  [77] grid_4.6.2                  Rtsne_0.17                 
 #>  [79] cluster_2.1.8.3             reshape2_1.4.5             
-#>  [81] generics_0.1.4              spatstat.data_3.1-9        
-#>  [83] gtable_0.3.6                tidyr_1.3.2                
+#>  [81] generics_0.1.4              gtable_0.3.6               
+#>  [83] spatstat.data_3.1-9         tidyr_1.3.2                
 #>  [85] data.table_1.18.6.1         sp_2.2-4                   
 #>  [87] XVector_0.52.0              spatstat.geom_3.8-3        
 #>  [89] BiocGenerics_0.58.1         RcppAnnoy_0.0.23           
-#>  [91] stringr_1.6.0               ggrepel_0.9.8              
-#>  [93] RANN_2.6.3                  pillar_1.11.1              
+#>  [91] ggrepel_0.9.8               RANN_2.6.3                 
+#>  [93] pillar_1.11.1               stringr_1.6.0              
 #>  [95] spam_2.11-4                 RcppHNSW_0.7.0             
 #>  [97] limma_3.68.5                later_1.4.8                
 #>  [99] splines_4.6.2               dplyr_1.2.1                

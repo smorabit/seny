@@ -41,6 +41,9 @@
 <li>The composition layer: subtype shifts within a cluster, the expected number of DEGs they produce on their own, and attribution of the cluster’s DEGs.</li>
 <li>Count matrices beyond one sparse matrix (a <code>DelayedMatrix</code>, HDF5-backed) are checked and summed a block of cells at a time.</li>
 <li>Plots: the traffic-light matrix (<code><a href="../reference/plotAdequacy.html">plotAdequacy()</a></code>), the comparison card (<code><a href="../reference/plotComparison.html">plotComparison()</a></code>) and the <code>plotX()</code> family.</li>
+<li>The cell-level theta fit, which only feeds the depth / cell / donor variance attribution, is off by default (<code>thetaReps = 0</code>); the calls do not use it. Use <code>thetaReps = 3</code> for the attribution (20 donors per draw).</li>
+<li>
+<code><a href="../reference/reportSeny.html">reportSeny()</a></code> writes a self-contained HTML report (an R Markdown template, editable via <code><a href="https://pkgs.rstudio.com/rmarkdown/reference/draft.html" class="external-link">rmarkdown::draft()</a></code>): summary, matrices, a sortable table of every comparison, composition and per-comparison cards.</li>
 </ul></div>
   </main></div>
 

@@ -59,3 +59,10 @@ Read the calls at a glance and explain them.
 - [`plotComposition()`](https://smorabit.github.io/seny/reference/plotComposition.md)
   : Composition of one comparison: subtype shares and composition-driven
   DE
+
+## Report
+
+Share the whole assessment as one HTML file.
+
+- [`reportSeny()`](https://smorabit.github.io/seny/reference/reportSeny.md)
+  : Shareable HTML report of an assessment

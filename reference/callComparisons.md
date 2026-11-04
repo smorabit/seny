@@ -54,8 +54,11 @@ callComparisons(
 
 A
 [S4Vectors::DataFrame](https://rdrr.io/pkg/S4Vectors/man/DataFrame-class.html),
-one row per comparison, with all metrics, the `call` and a `reason`
-string.
+one row per comparison, with all metrics, the `call`, a `reason` string
+and `flags`, the same flags as short codes separated by `;`
+(`confounded`, `imbalance`, `composition`, `few_testable`,
+`underpowered`, `too_few_samples`, `not_estimable`; empty when
+adequate).
 
 ## Examples
 
