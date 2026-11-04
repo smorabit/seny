@@ -32,3 +32,18 @@ plotAdequacy(res)
 
 A named list of `ggplot` objects, one per annotation set (a single-level
 input returns a one-element list).
+
+## Examples
+
+``` r
+sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+res <- assessAll(sce, sample = "donor", group = "condition",
+                 annotations = "cell_type", targetLFC = 1, thetaReps = 0)
+#> calcNormFactors has been renamed to normLibSizes
+#> calcNormFactors has been renamed to normLibSizes
+#> calcNormFactors has been renamed to normLibSizes
+plotAdequacy(res)
+#> $cell_type
+
+#> 
+```

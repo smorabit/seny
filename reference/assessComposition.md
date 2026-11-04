@@ -118,3 +118,38 @@ status; the most shifted child `comp_child` with `comp_share_A`,
 
 Clusters without a finer annotation nested in them get
 `composition = "not assessed"`; parts 2-4 need two annotation levels.
+
+## Examples
+
+``` r
+sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+x <- pbSetup(sce, sample = "donor", group = "condition",
+             annotations = c("cell_type", "cell_type_fine"), thetaReps = 0)
+variance <- estimateVariance(x)
+#> calcNormFactors has been renamed to normLibSizes
+#> calcNormFactors has been renamed to normLibSizes
+#> calcNormFactors has been renamed to normLibSizes
+#> calcNormFactors has been renamed to normLibSizes
+#> calcNormFactors has been renamed to normLibSizes
+#> calcNormFactors has been renamed to normLibSizes
+#> calcNormFactors has been renamed to normLibSizes
+sens <- estimateSensitivity(variance, targetLFC = 1)
+comp <- assessComposition(x, variance, sens)
+comp$summary[, c("comparison", "composition", "comp_child", "exp_comp_deg")]
+#>                                                        comparison  composition
+#> cell_type:CD4T:B_vs_A                       cell_type:CD4T:B_vs_A     assessed
+#> cell_type:CD8T:B_vs_A                       cell_type:CD8T:B_vs_A single child
+#> cell_type:NK:B_vs_A                           cell_type:NK:B_vs_A single child
+#> cell_type_fine:CD4 memory:B_vs_A cell_type_fine:CD4 memory:B_vs_A not assessed
+#> cell_type_fine:CD4 naive:B_vs_A   cell_type_fine:CD4 naive:B_vs_A not assessed
+#> cell_type_fine:CD8T:B_vs_A             cell_type_fine:CD8T:B_vs_A not assessed
+#> cell_type_fine:NK:B_vs_A                 cell_type_fine:NK:B_vs_A not assessed
+#>                                  comp_child exp_comp_deg
+#> cell_type:CD4T:B_vs_A            CD4 memory     44.35511
+#> cell_type:CD8T:B_vs_A                  <NA>           NA
+#> cell_type:NK:B_vs_A                    <NA>           NA
+#> cell_type_fine:CD4 memory:B_vs_A       <NA>           NA
+#> cell_type_fine:CD4 naive:B_vs_A        <NA>           NA
+#> cell_type_fine:CD8T:B_vs_A             <NA>           NA
+#> cell_type_fine:NK:B_vs_A               <NA>           NA
+```

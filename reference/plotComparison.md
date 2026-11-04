@@ -25,3 +25,15 @@ plotComparison(res, comparison)
 ## Value
 
 A `patchwork` composition of `ggplot`s.
+
+## Examples
+
+``` r
+sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+res <- assessAll(sce, sample = "donor", group = "condition",
+                 annotations = "cell_type", targetLFC = 1, thetaReps = 0)
+#> calcNormFactors has been renamed to normLibSizes
+#> calcNormFactors has been renamed to normLibSizes
+#> calcNormFactors has been renamed to normLibSizes
+plotComparison(res, "cell_type:CD4T:B_vs_A")
+```

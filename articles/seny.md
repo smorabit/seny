@@ -1,12 +1,29 @@
 # Assessing pseudobulk DE adequacy with seny
 
+## Installation
+
+`seny` is a Bioconductor package; install it with
+*[BiocManager](https://bioconductor.org/packages/3.23/BiocManager)*:
+
+``` r
+
+if (!requireNamespace("BiocManager", quietly = TRUE)) {
+    install.packages("BiocManager")
+}
+BiocManager::install("seny")
+```
+
 ## What seny does
 
 For every cluster-by-contrast comparison in a multi-sample single-cell
 dataset, `seny` decides whether a pseudobulk differential-expression
 test is **Adequate**, **Underpowered**, **Caution** or **Invalid**, and
 explains why. The diagnostics are analytic and run on your own data;
-there is no per-dataset simulation.
+there is no per-dataset simulation. The variance model and power follow
+the DE method you intend to run:
+*[edgeR](https://bioconductor.org/packages/3.23/edgeR)* (default),
+*[DESeq2](https://bioconductor.org/packages/3.23/DESeq2)* or
+*[limma](https://bioconductor.org/packages/3.23/limma)* voom.
 
 The call has a severity order — Invalid \> Caution \> Underpowered \>
 Adequate — and a `reason` string that lists *every* flag, so a single
@@ -15,7 +32,7 @@ headline never hides a second problem:
 | Call | Meaning |
 |----|----|
 | **Invalid** | Type I error cannot be trusted (design not estimable, too few samples per group). |
-| **Caution** | Valid, but a specific risk applies (condition confounded with a covariate, cell-count imbalance tracking the condition, or a subtype shift inside the cluster that would make genes look DE on its own). |
+| **Caution** | Valid, but a specific risk applies (condition confounded with a covariate, cell-count imbalance tracking the condition under DESeq2, or a subtype shift inside the cluster that would make genes look DE on its own). |
 | **Underpowered** | Valid but unable to detect the target effect (sensitivity too low, or too few testable genes). |
 | **Adequate** | No flags. |
 
@@ -72,7 +89,7 @@ knitr::kable(as.data.frame(res)[, cols], digits = 2, row.names = FALSE)
 | cluster | nA | nB | median_cells | gini_cells | cells_ratio | cells_cond_cor | n_testable | expected_recall | call |
 |:---|---:|---:|---:|---:|---:|---:|---:|---:|:---|
 | CD4T | 12 | 12 | 90.0 | 0.00 | 1.00 | NA | 400 | 1.00 | Adequate |
-| CD8T | 12 | 12 | 42.5 | 0.32 | 0.21 | -1 | 400 | 1.00 | Caution |
+| CD8T | 12 | 12 | 42.5 | 0.32 | 0.21 | -1 | 400 | 1.00 | Adequate |
 | NK | 12 | 12 | 20.0 | 0.00 | 1.00 | NA | 400 | 0.45 | Underpowered |
 
 Each non-adequate call explains itself:
@@ -84,16 +101,26 @@ for (i in seq_len(nrow(d))) {
     cat(d$cluster[i], "->", as.character(d$call[i]), "::", d$reason[i], "\n")
 }
 #> CD4T -> Adequate :: adequate 
-#> CD8T -> Caution :: cell-count imbalance correlated with condition (r -1.00, cutoff 0.50 at 24 samples; consider sample weights) 
+#> CD8T -> Adequate :: cell-count imbalance correlated with condition (r -1.00, cutoff 0.50 at 24 samples; reported only: edgeR and voom stay calibrated) 
 #> NK -> Underpowered :: underpowered (expected recall 45% at log2FC 1)
 ```
 
-Here CD4 T is clean (**Adequate**); CD8 T has far fewer cells in
-condition B, so its cell-count imbalance tracks the condition and breaks
-the equal-variance assumption (**Caution** — consider voom
-`sampleWeights` or dreamlet precision weights); NK has high
-between-donor variance at a modest cell count, so few genes are
-detectable at the target effect (**Underpowered**).
+Here CD4 T is clean (**Adequate**). CD8 T has far fewer cells in
+condition B, so its cell-count imbalance tracks the condition; seny
+reports it in the reason, but the call stays **Adequate** because edgeR
+and voom remain calibrated under imbalance. DESeq2 loses FDR control
+there, so with `method = "deseq2"` the same comparison is **Caution**:
+
+``` r
+
+res_d <- assessAll(sce, sample = "donor", group = "condition",
+                   annotations = "cell_type", targetLFC = 1, method = "deseq2")
+as.character(res_d$call[res_d$cluster == "CD8T"])
+#> [1] "Caution"
+```
+
+NK has high between-donor variance at a modest cell count, so few genes
+are detectable at the target effect (**Underpowered**).
 
 ## The traffic-light matrix
 
@@ -182,8 +209,8 @@ Give
 both annotation levels. `seny` works out which level nests in which from
 the cells, and for each broad cluster:
 
-- tests the subtypes’ shares of the cluster with
-  [`speckle::propeller`](https://rdrr.io/pkg/speckle/man/propeller.html);
+- tests the subtypes’ shares of the cluster with propeller from
+  *[speckle](https://bioconductor.org/packages/3.23/speckle)*;
 - predicts, per gene, the log2 fold change the observed shift alone
   would cause, and the power to call it DE, which sums to the number of
   DEGs expected from composition alone;
@@ -212,7 +239,7 @@ knitr::kable(d2[d2$annotation == "cell_type", cols], digits = 2, row.names = FAL
 | annotation | cluster | call | composition | comp_child | exp_comp_deg | n_parent_deg | n_comp_driven |
 |:---|:---|:---|:---|:---|---:|---:|---:|
 | cell_type | CD4T | Caution | assessed | CD4 memory | 44.36 | 70 | 40 |
-| cell_type | CD8T | Caution | single child | NA | NA | NA | NA |
+| cell_type | CD8T | Adequate | single child | NA | NA | NA | NA |
 | cell_type | NK | Underpowered | single child | NA | NA | NA | NA |
 
 ``` r
@@ -297,7 +324,7 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] seny_0.0.1
+#> [1] seny_0.99.0      BiocStyle_2.40.0
 #> 
 #> loaded via a namespace (and not attached):
 #>   [1] RColorBrewer_1.1-3          jsonlite_2.0.0             
@@ -321,57 +348,59 @@ sessionInfo()
 #>  [37] MatrixGenerics_1.24.0       fitdistrplus_1.2-6         
 #>  [39] future_1.82.0               shiny_1.14.0               
 #>  [41] digest_0.6.39               patchwork_1.3.2            
-#>  [43] S4Vectors_0.50.3            tensor_1.5.1               
-#>  [45] Seurat_5.6.0                RSpectra_0.16-2            
-#>  [47] irlba_2.4.1                 textshaping_1.0.5          
-#>  [49] GenomicRanges_1.64.0        beachmat_2.28.0            
-#>  [51] labeling_0.4.3              progressr_1.1.0            
-#>  [53] spatstat.sparse_3.2-0       polyclip_1.10-7            
-#>  [55] httr_1.4.9                  abind_1.4-8                
-#>  [57] compiler_4.6.2              withr_3.0.3                
-#>  [59] S7_0.2.2                    BiocParallel_1.46.0        
-#>  [61] fastDummies_1.7.6           MASS_7.3-66                
-#>  [63] DelayedArray_0.38.2         tools_4.6.2                
-#>  [65] vipor_0.4.7                 lmtest_0.9-40              
-#>  [67] otel_0.2.0                  beeswarm_0.4.0             
-#>  [69] httpuv_1.6.17               future.apply_1.21.0        
-#>  [71] goftest_1.2-3               glmGamPoi_1.24.0           
-#>  [73] glue_1.8.1                  nlme_3.1-171               
-#>  [75] promises_1.5.0              grid_4.6.2                 
-#>  [77] Rtsne_0.17                  cluster_2.1.8.3            
-#>  [79] reshape2_1.4.5              generics_0.1.4             
-#>  [81] spatstat.data_3.1-9         gtable_0.3.6               
-#>  [83] tidyr_1.3.2                 data.table_1.18.6.1        
-#>  [85] sp_2.2-4                    XVector_0.52.0             
-#>  [87] spatstat.geom_3.8-3         BiocGenerics_0.58.1        
-#>  [89] RcppAnnoy_0.0.23            ggrepel_0.9.8              
-#>  [91] RANN_2.6.3                  pillar_1.11.1              
-#>  [93] stringr_1.6.0               spam_2.11-4                
-#>  [95] RcppHNSW_0.7.0              limma_3.68.5               
-#>  [97] later_1.4.8                 splines_4.6.2              
-#>  [99] dplyr_1.2.1                 lattice_0.23-1             
-#> [101] deldir_2.0-4                survival_3.8-12            
-#> [103] tidyselect_1.2.1            SingleCellExperiment_1.34.0
-#> [105] locfit_1.5-9.12             miniUI_0.1.2               
-#> [107] pbapply_1.7-5               knitr_1.52                 
-#> [109] gridExtra_2.3.1             IRanges_2.46.0             
-#> [111] Seqinfo_1.2.0               edgeR_4.10.7               
-#> [113] SummarizedExperiment_1.42.0 scattermore_1.2            
-#> [115] stats4_4.6.2                xfun_0.62                  
-#> [117] Biobase_2.72.0              statmod_1.5.2              
-#> [119] matrixStats_1.5.0           stringi_1.8.9              
-#> [121] yaml_2.3.12                 evaluate_1.0.5             
-#> [123] codetools_0.2-20            tibble_3.3.1               
-#> [125] cli_3.6.6                   uwot_0.2.5                 
-#> [127] xtable_1.8-8                reticulate_1.47.0          
-#> [129] systemfonts_1.3.2           jquerylib_0.1.4            
-#> [131] Rcpp_1.1.2                  spatstat.random_3.5-2      
-#> [133] globals_0.20.0              png_0.1-9                  
-#> [135] spatstat.univar_3.2-0       parallel_4.6.2             
-#> [137] pkgdown_2.2.1               ggplot2_4.0.3              
-#> [139] dotCall64_1.2               sparseMatrixStats_1.24.0   
-#> [141] listenv_1.1.0               viridisLite_0.4.3          
-#> [143] scales_1.4.0                ggridges_0.5.7             
-#> [145] SeuratObject_5.4.0          purrr_1.2.2                
-#> [147] rlang_1.3.0                 cowplot_1.2.0
+#>  [43] S4Vectors_0.50.3            DESeq2_1.52.0              
+#>  [45] tensor_1.5.1                Seurat_5.6.0               
+#>  [47] RSpectra_0.16-2             irlba_2.4.1                
+#>  [49] textshaping_1.0.5           GenomicRanges_1.64.0       
+#>  [51] beachmat_2.28.0             labeling_0.4.3             
+#>  [53] progressr_1.1.0             spatstat.sparse_3.2-0      
+#>  [55] polyclip_1.10-7             httr_1.4.9                 
+#>  [57] abind_1.4-8                 compiler_4.6.2             
+#>  [59] withr_3.0.3                 S7_0.2.2                   
+#>  [61] BiocParallel_1.46.0         fastDummies_1.7.6          
+#>  [63] MASS_7.3-66                 DelayedArray_0.38.2        
+#>  [65] tools_4.6.2                 vipor_0.4.7                
+#>  [67] lmtest_0.9-40               otel_0.2.0                 
+#>  [69] beeswarm_0.4.0              httpuv_1.6.17              
+#>  [71] future.apply_1.21.0         goftest_1.2-3              
+#>  [73] glmGamPoi_1.24.0            glue_1.8.1                 
+#>  [75] nlme_3.1-171                promises_1.5.0             
+#>  [77] grid_4.6.2                  Rtsne_0.17                 
+#>  [79] cluster_2.1.8.3             reshape2_1.4.5             
+#>  [81] generics_0.1.4              spatstat.data_3.1-9        
+#>  [83] gtable_0.3.6                tidyr_1.3.2                
+#>  [85] data.table_1.18.6.1         sp_2.2-4                   
+#>  [87] XVector_0.52.0              spatstat.geom_3.8-3        
+#>  [89] BiocGenerics_0.58.1         RcppAnnoy_0.0.23           
+#>  [91] stringr_1.6.0               ggrepel_0.9.8              
+#>  [93] RANN_2.6.3                  pillar_1.11.1              
+#>  [95] spam_2.11-4                 RcppHNSW_0.7.0             
+#>  [97] limma_3.68.5                later_1.4.8                
+#>  [99] splines_4.6.2               dplyr_1.2.1                
+#> [101] lattice_0.23-1              deldir_2.0-4               
+#> [103] survival_3.8-12             tidyselect_1.2.1           
+#> [105] SingleCellExperiment_1.34.0 locfit_1.5-9.12            
+#> [107] miniUI_0.1.2                pbapply_1.7-5              
+#> [109] knitr_1.52                  gridExtra_2.3.1            
+#> [111] bookdown_0.48               IRanges_2.46.0             
+#> [113] Seqinfo_1.2.0               edgeR_4.10.7               
+#> [115] SummarizedExperiment_1.42.0 scattermore_1.2            
+#> [117] stats4_4.6.2                xfun_0.62                  
+#> [119] Biobase_2.72.0              statmod_1.5.2              
+#> [121] matrixStats_1.5.0           stringi_1.8.9              
+#> [123] yaml_2.3.12                 evaluate_1.0.5             
+#> [125] codetools_0.2-20            tibble_3.3.1               
+#> [127] BiocManager_1.30.27         cli_3.6.6                  
+#> [129] uwot_0.2.5                  xtable_1.8-8               
+#> [131] reticulate_1.47.0           systemfonts_1.3.2          
+#> [133] jquerylib_0.1.4             Rcpp_1.1.2                 
+#> [135] spatstat.random_3.5-2       globals_0.20.0             
+#> [137] png_0.1-9                   spatstat.univar_3.2-0      
+#> [139] parallel_4.6.2              pkgdown_2.2.1              
+#> [141] ggplot2_4.0.3               dotCall64_1.2              
+#> [143] sparseMatrixStats_1.24.0    listenv_1.1.0              
+#> [145] viridisLite_0.4.3           scales_1.4.0               
+#> [147] ggridges_0.5.7              SeuratObject_5.4.0         
+#> [149] purrr_1.2.2                 rlang_1.3.0                
+#> [151] cowplot_1.2.0
 ```

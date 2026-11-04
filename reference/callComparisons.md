@@ -4,8 +4,10 @@ Merges the layer metrics into one tidy table, one row per comparison,
 and assigns each comparison a call: **Invalid** (the contrast is not
 estimable, or too few samples per group), **Caution** (estimable but the
 condition is confounded with a covariate, cell-count imbalance tracks
-the condition, or a subtype shift within the cluster would by itself
-make enough genes look DE; see
+the condition under DESeq2 (whose FDR control it breaks; with edgeR or
+voom the imbalance is reported in the reason but does not change the
+call), or a subtype shift within the cluster would by itself make enough
+genes look DE; see
 [`assessComposition()`](https://smorabit.github.io/seny/reference/assessComposition.md)),
 **Underpowered** (valid but the expected recall at the target effect is
 below `thresholds$sensitivity`, or too few testable genes), or
@@ -54,3 +56,24 @@ A
 [S4Vectors::DataFrame](https://rdrr.io/pkg/S4Vectors/man/DataFrame-class.html),
 one row per comparison, with all metrics, the `call` and a `reason`
 string.
+
+## Examples
+
+``` r
+sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+x <- pbSetup(sce, sample = "donor", group = "condition",
+             annotations = "cell_type", thetaReps = 0)
+variance <- estimateVariance(x)
+#> calcNormFactors has been renamed to normLibSizes
+#> calcNormFactors has been renamed to normLibSizes
+#> calcNormFactors has been renamed to normLibSizes
+sens <- estimateSensitivity(variance, targetLFC = 1)
+res <- callComparisons(assessDesign(x), assessPseudobulk(x), variance$summary, sens)
+res[, c("comparison", "call", "reason")]
+#> DataFrame with 3 rows and 3 columns
+#>              comparison         call                 reason
+#>             <character>     <factor>            <character>
+#> 1 cell_type:CD4T:B_vs_A Adequate                   adequate
+#> 2 cell_type:CD8T:B_vs_A Adequate     cell-count imbalance..
+#> 3   cell_type:NK:B_vs_A Underpowered underpowered (expect..
+```

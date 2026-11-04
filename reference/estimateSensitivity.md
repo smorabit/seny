@@ -90,3 +90,21 @@ chosen method at `fdr` (floored at `1 / m`), so power is evaluated at
 the threshold BH actually uses there. On OneK1K with 0.5-20\\ of genes
 injected as DE and on male vs female it was the best calibrated of the
 rules tested (E4b).
+
+## Examples
+
+``` r
+sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+x <- pbSetup(sce, sample = "donor", group = "condition",
+             annotations = "cell_type", thetaReps = 0)
+variance <- estimateVariance(x)
+#> calcNormFactors has been renamed to normLibSizes
+#> calcNormFactors has been renamed to normLibSizes
+#> calcNormFactors has been renamed to normLibSizes
+sens <- estimateSensitivity(variance, targetLFC = 1)
+sens[, c("comparison", "expected_recall")]
+#>              comparison expected_recall
+#> 1 cell_type:CD4T:B_vs_A       1.0000000
+#> 2 cell_type:CD8T:B_vs_A       1.0000000
+#> 3   cell_type:NK:B_vs_A       0.4493993
+```

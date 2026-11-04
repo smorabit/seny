@@ -38,7 +38,9 @@ Useful links:
 ## Author
 
 **Maintainer**: Samuel Morabito <sam.morabito@cnag.eu>
+([ORCID](https://orcid.org/0000-0002-7768-4856))
 
 Authors:
 
 - Samuel Morabito <sam.morabito@cnag.eu>
+  ([ORCID](https://orcid.org/0000-0002-7768-4856))

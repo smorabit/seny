@@ -1,10 +1,9 @@
 # Default decision thresholds for the adequacy call
 
-Provisional values used by
-[`callComparisons()`](https://smorabit.github.io/seny/reference/callComparisons.md).
-The final numbers are to be derived from the validation experiments
-(E1-E8); until then these are sensible placeholders, documented so a
-user can override them.
+Values used by
+[`callComparisons()`](https://smorabit.github.io/seny/reference/callComparisons.md),
+each from a validation experiment or a stated convention (threshold
+audit before 1.0.0); a user can override any.
 
 ## Usage
 
@@ -15,19 +14,27 @@ defaultThresholds()
 ## Value
 
 A named list: `cramerV` (condition-covariate association above which a
-comparison is flagged Caution), `vif` (variance inflation factor
-threshold), `sensitivity` (expected recall at the target effect at or
-above which a comparison is adequately powered; 0.5 matches replication
-failure defined as recall below 0.5), `minSamples` (fewer samples per
-group is Invalid), `cellsCondCor` (absolute correlation of log cells per
-sample with condition above which cell-count imbalance is flagged
-Caution), `cellsCondAlpha` (the correlation must also exceed the
-critical value at this level for the comparison's sample size, so chance
+comparison is flagged Caution; on null splits with the confounder
+ignored, false discoveries rise above the base rate from 0.3), `vif`
+(variance inflation factor of the condition given the covariates at or
+above which the comparison is flagged Caution; a convention, R^2 = 0.8:
+adjusted fits stay calibrated and the power cost is already in the
+expected recall, but the estimate rests on the few samples that break
+the collinearity), `sensitivity` (expected recall at the target effect
+at or above which a comparison is adequately powered; 0.5 matches
+replication failure defined as recall below 0.5), `minSamples` (fewer
+samples per group is Invalid), `cellsCondCor` (absolute correlation of
+log cells per sample with condition above which cell-count imbalance is
+reported, and flagged Caution under DESeq2, whose FDR control it
+breaks), `cellsCondAlpha` (the correlation must also exceed the critical
+value at this level for the comparison's sample size, so chance
 correlations in small designs are not flagged: the cutoff is
 `max(cellsCondCor, r_crit(n))`, about 0.81 at 6 samples and
 `cellsCondCor` from ~16 samples), and `minTestable` (fewer testable
-genes is Underpowered). The layer-2 values, like the others, are
-provisional placeholders until E1-E8. The composition values (see
+genes is Underpowered; a convention guarding the genome-wide estimates
+behind the call, pi1 from BH discoveries and the dispersion prior; power
+stays calibrated down to 100-200 testable genes). The composition values
+(see
 [`assessComposition()`](https://smorabit.github.io/seny/reference/assessComposition.md))
 were calibrated on imposed subtype shifts in OneK1K (E6): `compFDR`
 (propeller FDR below which a child's share within its parent is called
@@ -40,3 +47,24 @@ must explain for the gene to be attributed to composition; 0.5: on
 natural age shifts in OneK1K (E5) it labels 3% of real within-subtype
 DEGs composition-driven, against 8% at 0.25, the best value on imposed
 shifts, while 0.99 of its composition-driven labels are artefacts).
+
+## Examples
+
+``` r
+th <- defaultThresholds()
+th$sensitivity
+#> [1] 0.5
+# override one threshold, keep the rest
+str(utils::modifyList(th, list(sensitivity = 0.7)))
+#> List of 10
+#>  $ cramerV       : num 0.3
+#>  $ vif           : num 5
+#>  $ sensitivity   : num 0.7
+#>  $ minSamples    : num 2
+#>  $ cellsCondCor  : num 0.5
+#>  $ cellsCondAlpha: num 0.05
+#>  $ minTestable   : num 200
+#>  $ compFDR       : num 0.05
+#>  $ compFrac      : num 0.01
+#>  $ compExplained : num 0.5
+```

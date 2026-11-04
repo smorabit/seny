@@ -17,7 +17,7 @@ Invalid call per cluster-by-contrast comparison."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">seny</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -28,6 +28,7 @@ Invalid call per cluster-by-contrast comparison."></head><body>
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/seny.html">Get started</a></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/smorabit/seny/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -84,7 +85,11 @@ Invalid call per cluster-by-contrast comparison.</p>
 
 <dl><dt id="arg-sce">sce<a class="anchor" aria-label="anchor" href="#arg-sce"></a></dt>
 <dd><p>A <a href="https://rdrr.io/pkg/SingleCellExperiment/man/SingleCellExperiment.html" class="external-link">SingleCellExperiment::SingleCellExperiment</a> or
-<a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">SummarizedExperiment</a> with a raw-count assay (non-negative integers).</p></dd>
+<a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">SummarizedExperiment</a> with a raw-count assay (non-negative integers). The
+assay may be a base or sparse matrix, or an out-of-memory matrix such as a
+<code>DelayedMatrix</code> or an HDF5-backed matrix (for atlases beyond one sparse
+matrix's 2^31 nonzeros): it is then checked and summed a block of cells at
+a time (<code>options(seny.block_cells = ...)</code>, default 1e5).</p></dd>
 
 
 <dt id="arg-sample">sample<a class="anchor" aria-label="anchor" href="#arg-sample"></a></dt>
@@ -173,11 +178,24 @@ the cluster share needs two nested annotation levels in <code>annotations</code>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">sce</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_sce.rds"</span>, package <span class="op">=</span> <span class="st">"seny"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Loading required namespace: SingleCellExperiment</span>
 <span class="r-in"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">assessAll</span><span class="op">(</span><span class="va">sce</span>, sample <span class="op">=</span> <span class="st">"donor"</span>, group <span class="op">=</span> <span class="st">"condition"</span>,</span></span>
-<span class="r-in"><span>                 annotations <span class="op">=</span> <span class="st">"cell_type"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>                 annotations <span class="op">=</span> <span class="st">"cell_type"</span>, targetLFC <span class="op">=</span> <span class="fl">1</span>, thetaReps <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> calcNormFactors has been renamed to normLibSizes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> calcNormFactors has been renamed to normLibSizes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> calcNormFactors has been renamed to normLibSizes</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">call</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     Adequate Underpowered      Caution      Invalid </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            2            1            0            0 </span>
+<span class="r-in"><span><span class="va">res</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cluster"</span>, <span class="st">"call"</span>, <span class="st">"reason"</span><span class="op">)</span><span class="op">]</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> DataFrame with 3 rows and 3 columns</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       cluster         call                 reason</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;character&gt;     &lt;factor&gt;            &lt;character&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1        CD4T Adequate                   adequate</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2        CD8T Adequate     cell-count imbalance..</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3          NK Underpowered underpowered (expect..</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

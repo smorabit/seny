@@ -35,7 +35,7 @@ MVP (calibrate = FALSE)."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">seny</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,6 +46,7 @@ MVP (calibrate = FALSE)."></head><body>
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/seny.html">Get started</a></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/smorabit/seny/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -155,6 +156,23 @@ of genes injected as DE and on male vs female it was the best calibrated of the
 rules tested (E4b).</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">sce</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_sce.rds"</span>, package <span class="op">=</span> <span class="st">"seny"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="pbSetup.html">pbSetup</a></span><span class="op">(</span><span class="va">sce</span>, sample <span class="op">=</span> <span class="st">"donor"</span>, group <span class="op">=</span> <span class="st">"condition"</span>,</span></span>
+<span class="r-in"><span>             annotations <span class="op">=</span> <span class="st">"cell_type"</span>, thetaReps <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">variance</span> <span class="op">&lt;-</span> <span class="fu"><a href="estimateVariance.html">estimateVariance</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> calcNormFactors has been renamed to normLibSizes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> calcNormFactors has been renamed to normLibSizes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> calcNormFactors has been renamed to normLibSizes</span>
+<span class="r-in"><span><span class="va">sens</span> <span class="op">&lt;-</span> <span class="fu">estimateSensitivity</span><span class="op">(</span><span class="va">variance</span>, targetLFC <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">sens</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"comparison"</span>, <span class="st">"expected_recall"</span><span class="op">)</span><span class="op">]</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              comparison expected_recall</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 cell_type:CD4T:B_vs_A       1.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 cell_type:CD8T:B_vs_A       1.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3   cell_type:NK:B_vs_A       0.4493993</span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

@@ -13,7 +13,7 @@ step measures that risk for every comparison, in four parts:"></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">seny</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -24,6 +24,7 @@ step measures that risk for every comparison, in four parts:"></head><body>
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/seny.html">Get started</a></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/smorabit/seny/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -146,6 +147,40 @@ child comparison could be fitted).</p></li>
 <code>composition = "not assessed"</code>; parts 2-4 need two annotation levels.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">sce</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_sce.rds"</span>, package <span class="op">=</span> <span class="st">"seny"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="pbSetup.html">pbSetup</a></span><span class="op">(</span><span class="va">sce</span>, sample <span class="op">=</span> <span class="st">"donor"</span>, group <span class="op">=</span> <span class="st">"condition"</span>,</span></span>
+<span class="r-in"><span>             annotations <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cell_type"</span>, <span class="st">"cell_type_fine"</span><span class="op">)</span>, thetaReps <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">variance</span> <span class="op">&lt;-</span> <span class="fu"><a href="estimateVariance.html">estimateVariance</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> calcNormFactors has been renamed to normLibSizes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> calcNormFactors has been renamed to normLibSizes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> calcNormFactors has been renamed to normLibSizes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> calcNormFactors has been renamed to normLibSizes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> calcNormFactors has been renamed to normLibSizes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> calcNormFactors has been renamed to normLibSizes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> calcNormFactors has been renamed to normLibSizes</span>
+<span class="r-in"><span><span class="va">sens</span> <span class="op">&lt;-</span> <span class="fu"><a href="estimateSensitivity.html">estimateSensitivity</a></span><span class="op">(</span><span class="va">variance</span>, targetLFC <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">comp</span> <span class="op">&lt;-</span> <span class="fu">assessComposition</span><span class="op">(</span><span class="va">x</span>, <span class="va">variance</span>, <span class="va">sens</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">comp</span><span class="op">$</span><span class="va">summary</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"comparison"</span>, <span class="st">"composition"</span>, <span class="st">"comp_child"</span>, <span class="st">"exp_comp_deg"</span><span class="op">)</span><span class="op">]</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                        comparison  composition</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> cell_type:CD4T:B_vs_A                       cell_type:CD4T:B_vs_A     assessed</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> cell_type:CD8T:B_vs_A                       cell_type:CD8T:B_vs_A single child</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> cell_type:NK:B_vs_A                           cell_type:NK:B_vs_A single child</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> cell_type_fine:CD4 memory:B_vs_A cell_type_fine:CD4 memory:B_vs_A not assessed</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> cell_type_fine:CD4 naive:B_vs_A   cell_type_fine:CD4 naive:B_vs_A not assessed</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> cell_type_fine:CD8T:B_vs_A             cell_type_fine:CD8T:B_vs_A not assessed</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> cell_type_fine:NK:B_vs_A                 cell_type_fine:NK:B_vs_A not assessed</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                  comp_child exp_comp_deg</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> cell_type:CD4T:B_vs_A            CD4 memory     44.35511</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> cell_type:CD8T:B_vs_A                  &lt;NA&gt;           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> cell_type:NK:B_vs_A                    &lt;NA&gt;           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> cell_type_fine:CD4 memory:B_vs_A       &lt;NA&gt;           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> cell_type_fine:CD4 naive:B_vs_A        &lt;NA&gt;           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> cell_type_fine:CD8T:B_vs_A             &lt;NA&gt;           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> cell_type_fine:NK:B_vs_A               &lt;NA&gt;           NA</span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

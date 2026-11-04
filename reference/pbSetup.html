@@ -17,7 +17,7 @@ names and per-cluster cell-level overdispersion (theta) in metadata()."></head><
 
     <a class="navbar-brand me-2" href="../index.html">seny</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -28,6 +28,7 @@ names and per-cluster cell-level overdispersion (theta) in metadata()."></head><
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/seny.html">Get started</a></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/smorabit/seny/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -79,7 +80,11 @@ names and per-cluster cell-level overdispersion (<code>theta</code>) in <code>me
 
 <dl><dt id="arg-sce">sce<a class="anchor" aria-label="anchor" href="#arg-sce"></a></dt>
 <dd><p>A <a href="https://rdrr.io/pkg/SingleCellExperiment/man/SingleCellExperiment.html" class="external-link">SingleCellExperiment::SingleCellExperiment</a> or
-<a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">SummarizedExperiment</a> with a raw-count assay (non-negative integers).</p></dd>
+<a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">SummarizedExperiment</a> with a raw-count assay (non-negative integers). The
+assay may be a base or sparse matrix, or an out-of-memory matrix such as a
+<code>DelayedMatrix</code> or an HDF5-backed matrix (for atlases beyond one sparse
+matrix's 2^31 nonzeros): it is then checked and summed a block of cells at
+a time (<code>options(seny.block_cells = ...)</code>, default 1e5).</p></dd>
 
 
 <dt id="arg-sample">sample<a class="anchor" aria-label="anchor" href="#arg-sample"></a></dt>
@@ -152,6 +157,18 @@ annotation level.</p>
 later steps never need the single-cell object again.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">sce</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_sce.rds"</span>, package <span class="op">=</span> <span class="st">"seny"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">pbSetup</span><span class="op">(</span><span class="va">sce</span>, sample <span class="op">=</span> <span class="st">"donor"</span>, group <span class="op">=</span> <span class="st">"condition"</span>,</span></span>
+<span class="r-in"><span>             annotations <span class="op">=</span> <span class="st">"cell_type"</span>, thetaReps <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">x</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> List of length 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> names(1): cell_type</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "cell_type"</span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

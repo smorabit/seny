@@ -36,3 +36,20 @@ plotComposition(res, comparison, nLabel = 10)
 ## Value
 
 A `patchwork` of two `ggplot`s.
+
+## Examples
+
+``` r
+sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+res <- assessAll(sce, sample = "donor", group = "condition",
+                 annotations = c("cell_type", "cell_type_fine"),
+                 targetLFC = 1, thetaReps = 0)
+#> calcNormFactors has been renamed to normLibSizes
+#> calcNormFactors has been renamed to normLibSizes
+#> calcNormFactors has been renamed to normLibSizes
+#> calcNormFactors has been renamed to normLibSizes
+#> calcNormFactors has been renamed to normLibSizes
+#> calcNormFactors has been renamed to normLibSizes
+#> calcNormFactors has been renamed to normLibSizes
+plotComposition(res, "cell_type:CD4T:B_vs_A")
+```

@@ -39,7 +39,11 @@ pbSetup(
   [SingleCellExperiment::SingleCellExperiment](https://rdrr.io/pkg/SingleCellExperiment/man/SingleCellExperiment.html)
   or
   [SummarizedExperiment](https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html)
-  with a raw-count assay (non-negative integers).
+  with a raw-count assay (non-negative integers). The assay may be a
+  base or sparse matrix, or an out-of-memory matrix such as a
+  `DelayedMatrix` or an HDF5-backed matrix (for atlases beyond one
+  sparse matrix's 2^31 nonzeros): it is then checked and summed a block
+  of cells at a time (`options(seny.block_cells = ...)`, default 1e5).
 
 - sample:
 
@@ -115,3 +119,16 @@ Cell-level `theta` (within-donor cell-to-cell overdispersion, needed by
 [`estimateVariance()`](https://smorabit.github.io/seny/reference/estimateVariance.md))
 is estimated here, while the cells are in hand, so the later steps never
 need the single-cell object again.
+
+## Examples
+
+``` r
+sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+x <- pbSetup(sce, sample = "donor", group = "condition",
+             annotations = "cell_type", thetaReps = 0)
+x
+#> List of length 1
+#> names(1): cell_type
+names(x)
+#> [1] "cell_type"
+```

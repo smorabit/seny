@@ -59,3 +59,20 @@ intends to run. `edgeR` and `deseq2` require sum aggregation (integer
 counts); `voom` works on either sum (voom) or mean (limma-trend)
 pseudobulks. `dreamlet` is reserved for mixed designs and is not yet
 implemented.
+
+## Examples
+
+``` r
+sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+x <- pbSetup(sce, sample = "donor", group = "condition",
+             annotations = "cell_type", thetaReps = 0)
+variance <- estimateVariance(x)
+#> calcNormFactors has been renamed to normLibSizes
+#> calcNormFactors has been renamed to normLibSizes
+#> calcNormFactors has been renamed to normLibSizes
+variance$summary[, c("comparison", "method", "median_phi_total")]
+#>                                  comparison method median_phi_total
+#> cell_type:CD4T:B_vs_A cell_type:CD4T:B_vs_A  edgeR       0.01488815
+#> cell_type:CD8T:B_vs_A cell_type:CD8T:B_vs_A  edgeR       0.02720159
+#> cell_type:NK:B_vs_A     cell_type:NK:B_vs_A  edgeR       0.31600195
+```

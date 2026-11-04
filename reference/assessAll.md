@@ -50,7 +50,11 @@ assessAll(
   [SingleCellExperiment::SingleCellExperiment](https://rdrr.io/pkg/SingleCellExperiment/man/SingleCellExperiment.html)
   or
   [SummarizedExperiment](https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html)
-  with a raw-count assay (non-negative integers).
+  with a raw-count assay (non-negative integers). The assay may be a
+  base or sparse matrix, or an out-of-memory matrix such as a
+  `DelayedMatrix` or an HDF5-backed matrix (for atlases beyond one
+  sparse matrix's 2^31 nonzeros): it is then checked and summed a block
+  of cells at a time (`options(seny.block_cells = ...)`, default 1e5).
 
 - sample:
 
@@ -147,9 +151,22 @@ fine).
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
+sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+#> Loading required namespace: SingleCellExperiment
 res <- assessAll(sce, sample = "donor", group = "condition",
-                 annotations = "cell_type")
+                 annotations = "cell_type", targetLFC = 1, thetaReps = 0)
+#> calcNormFactors has been renamed to normLibSizes
+#> calcNormFactors has been renamed to normLibSizes
+#> calcNormFactors has been renamed to normLibSizes
 table(res$call)
-} # }
+#> 
+#>     Adequate Underpowered      Caution      Invalid 
+#>            2            1            0            0 
+res[, c("cluster", "call", "reason")]
+#> DataFrame with 3 rows and 3 columns
+#>       cluster         call                 reason
+#>   <character>     <factor>            <character>
+#> 1        CD4T Adequate                   adequate
+#> 2        CD8T Adequate     cell-count imbalance..
+#> 3          NK Underpowered underpowered (expect..
 ```

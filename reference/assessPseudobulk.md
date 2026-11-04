@@ -37,3 +37,16 @@ assessPseudobulk(x)
 A `data.frame`, one row per comparison, with `min_cells`,
 `median_cells`, `gini_cells`, `frac_below_min`, `cells_ratio`,
 `cells_cond_cor`, `libsize_cond_cor`, `n_testable` and `frac_testable`.
+
+## Examples
+
+``` r
+sce <- readRDS(system.file("extdata", "example_sce.rds", package = "seny"))
+x <- pbSetup(sce, sample = "donor", group = "condition",
+             annotations = "cell_type", thetaReps = 0)
+assessPseudobulk(x)[, c("comparison", "cells_cond_cor", "n_testable")]
+#>                        comparison cells_cond_cor n_testable
+#> cell_type.1 cell_type:CD4T:B_vs_A             NA        400
+#> cell_type.2 cell_type:CD8T:B_vs_A             -1        400
+#> cell_type.3   cell_type:NK:B_vs_A             NA        400
+```
